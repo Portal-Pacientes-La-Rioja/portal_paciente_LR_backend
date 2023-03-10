@@ -37,6 +37,18 @@ class Person(BaseModel):
     identification_back_image_file_type: Optional[str]
     id_person_status: Optional[int]
     family_group: Optional[list]
+    ##################
+
+    ##################
+    
+    tipology: Optional[str]   
+    tipology_category: Optional[str]
+    dependecy: Optional[str]
+    
+    location: Optional[str]
+    address: Optional[str]
+    services: Optional[str]
+    specialties: Optional[str]
 
     @validator("birthdate", pre=True)
     def parse_birthdate(cls, value):
@@ -179,3 +191,15 @@ class PersonLogged(BaseModel):
     access_token: str
     token_type: str
     data: PersonFamily
+
+class Institution(BaseModel):
+    id: Optional[int]
+    name: Optional[str]
+    tipology: Optional[str]   
+    tipology_category: Optional[str]
+    dependecy: Optional[str]
+    department: Optional[str]
+    location: Optional[str]
+    address: Optional[str]
+    services: Optional[str]
+    specialties: Optional[str]

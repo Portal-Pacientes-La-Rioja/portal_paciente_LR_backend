@@ -29,6 +29,7 @@ from app.models.genders import Gender as model_gender
 from app.models.message import Message as model_message
 from app.models.permission import Permission
 from app.models.person import Person as model_person
+from app.models.institutions import Institutions as model_institution
 from app.models.person_message import PersonMessage as model_person_message
 from app.models.person_status import PersonStatus as model_person_status
 from app.models.role import Role as model_role
@@ -42,6 +43,9 @@ from app.schemas.person import (
 from app.schemas.person_user import PersonUser as schema_person_user
 from app.schemas.responses import ResponseNOK, ResponseOK
 from app.schemas.user import User as schema_user
+from app.schemas.institutions import Institution as schemas_institution
+from app.schemas.institutions import InstitutionUp as schemas_institution_up
+
 
 
 class LocalImpl:
@@ -449,6 +453,99 @@ class LocalImpl:
             self.db.rollback()
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
+        
+    def create_institution(self, institution: schemas_institution) -> Union[ResponseOK, ResponseNOK]:
+        try:
+           
+            new_inst = model_institution(
+                 None, 
+                 institution.name,
+                 institution.tipology,
+                 institution.tipology_category,
+                 institution.dependecy,
+                 institution.department,
+                 institution.location,
+                 institution.address,
+                 institution.services,
+                 institution.specialties
+                )
+            
+            
+            self.db.add(new_inst)
+            self.db.commit()
+
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Institution not created.", code=417)
+        return ResponseOK(message="Institution created successfully.", code=201)
+    
+    def get_institutions(self):
+        try:
+            result = []
+            collection = self.db.query(model_institution).all()
+
+            for u in collection:
+                result.append({
+                    "id": u.id, 
+                    "name": u.name, 
+                    "tipology": u.tipology,
+                    "tipology_category": u.tipology_category,
+                    "dependecy": u.dependecy,
+                    "department": u.department,
+                    "location": u.location,
+                    "address": u.address,
+                    "services": u.services,
+                    "specialties": u.specialties
+                })
+            
+
+            return result
+        except Exception as e:
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message=f"Error: {str(e)}", code=417)
+        
+    def get_institutions_by_id(self, institutions_id: int):
+        try:
+            value = self.db.query(model_institution).where(model_institution.id == institutions_id).first()
+        except Exception as e:
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Institution cannot be retrieved.", code=202)
+        return value
+    
+    def update_institution(self, institution: schemas_institution_up):
+        
+        buff_person = (
+            self.db.query(model_institution)
+            .where(model_institution.name == institution.name)
+            .first()
+        )
+        if buff_person is not None:
+            return ResponseNOK(value="", message="Institution already exists.", code=417)
+
+        try:
+            existing_institution = (
+                self.db.query(model_institution)
+                .where(model_institution.id == institution.id)
+                .first()
+            )
+            existing_institution.name = institution.name,
+            existing_institution.tipology = institution.tipology,
+            existing_institution.tipology_category = institution.tipology_category,
+            existing_institution.dependecy = institution.dependecy,
+            existing_institution.department = institution.department,
+            existing_institution.location = institution.location,
+            existing_institution.address = institution.address,
+            existing_institution.services = institution.services,
+            existing_institution.specialties = institution.specialties
+            self.db.commit()
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Institution not updated.", code=417)
+
+        return ResponseOK(message="Institution updated successfully.", code=201)
+
 
     def create_person(self, person: schema_create_person):
         buff_person = (
