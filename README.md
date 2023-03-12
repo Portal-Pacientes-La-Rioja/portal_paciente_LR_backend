@@ -58,8 +58,10 @@ Este docker-compose levanta un MariaDB y el Backend, además de Adminer para
 la gestión de la base de datos. Si no se quiere instalar Adminer eliminar el 
 servicio del docker-compose.
 
-Luego debemos rellenar la base de datos ejecutando el siguiente commando:
+Luego de levantar la base de datos debemos ejecutar las migraciones de la base
+de datos, dentro del contenedor de la app (o en la máquina local por si se está
+ejecutando la app en modo desarrollo):
 
 ```bash
-$ cat database/initfile.sql | docker exec -i portal_pacientes_db /usr/bin/mysql -u root  --password=root portal_paciente_LR
+alembic upgrade head
 ```
