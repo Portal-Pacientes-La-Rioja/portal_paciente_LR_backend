@@ -455,8 +455,16 @@ class LocalImpl:
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
         
     def create_institution(self, institution: schemas_institution) -> Union[ResponseOK, ResponseNOK]:
+        
+        buff_institution = (
+            self.db.query(model_institution)
+            .where(model_institution.name == institution.name)
+            .first()
+        )
+        if buff_institution is not None:
+            return ResponseNOK(value="", message="Institution already exists.", code=417)
         try:
-           
+            
             new_inst = model_institution(
                  None, 
                  institution.name,
@@ -467,10 +475,9 @@ class LocalImpl:
                  institution.location,
                  institution.address,
                  institution.services,
-                 institution.specialties
+                 institution.specialties,
+                 institution.activate
                 )
-            
-            
             self.db.add(new_inst)
             self.db.commit()
 
@@ -481,10 +488,10 @@ class LocalImpl:
         return ResponseOK(message="Institution created successfully.", code=201)
     
     def get_institutions(self):
+
         try:
             result = []
             collection = self.db.query(model_institution).all()
-
             for u in collection:
                 result.append({
                     "id": u.id, 
@@ -496,22 +503,42 @@ class LocalImpl:
                     "location": u.location,
                     "address": u.address,
                     "services": u.services,
-                    "specialties": u.specialties
+                    "specialties": u.specialties,
+                    "activate": u.activate
                 })
-            
 
             return result
         except Exception as e:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
+    
+
+        
         
     def get_institutions_by_id(self, institutions_id: int):
         try:
-            value = self.db.query(model_institution).where(model_institution.id == institutions_id).first()
+            value = self.db.query(model_institution).where(model_institution.id == institutions_id) .first()
         except Exception as e:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="Institution cannot be retrieved.", code=202)
         return value
+    
+    def on_off_institution(self, institution: schemas_institution_up):
+        try:
+            existing_institution = (
+                self.db.query(model_institution)
+                .where(model_institution.id == institution.id)
+                .first()
+            )
+            existing_institution.activate = institution.activate
+            self.db.commit()
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Not updated.", code=417)
+
+        return ResponseOK(message="Updated successfully.", code=201)
+
     
     def update_institution(self, institution: schemas_institution_up):
         

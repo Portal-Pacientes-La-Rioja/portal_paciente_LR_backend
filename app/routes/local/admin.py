@@ -20,6 +20,16 @@ from app.schemas.institutions import Institution as schemas_institution
 from app.schemas.person import Person as institution_id
 from app.gear.local.local_impl import LocalImpl
 from app.schemas.institutions import InstitutionUp as schemas_institution_up
+
+@router_admin.put(
+    "/onoffinstitution",
+    response_model=ResponseOK,
+    responses={417: {"model": ResponseNOK}},
+    tags=["User"],
+)
+async def update(institution_id: schemas_institution_up, db: Session = Depends(get_db)):
+    return LocalImpl(db).on_off_institution(institution_id)
+
 @router_admin.put(
     "/updateinstitution",
     response_model=ResponseOK,
@@ -28,7 +38,6 @@ from app.schemas.institutions import InstitutionUp as schemas_institution_up
 )
 async def update(institution_id: schemas_institution_up, db: Session = Depends(get_db)):
     return LocalImpl(db).update_institution(institution_id)
-
 
 @router_admin.get(
     "/getinstitutionsbyid",

@@ -38,17 +38,17 @@ class Person(BaseModel):
     id_person_status: Optional[int]
     family_group: Optional[list]
     ##################
-
+    #get_institutions
     ##################
     
     tipology: Optional[str]   
     tipology_category: Optional[str]
     dependecy: Optional[str]
-    
     location: Optional[str]
     address: Optional[str]
     services: Optional[str]
     specialties: Optional[str]
+    activate: Optional[int]
 
     @validator("birthdate", pre=True)
     def parse_birthdate(cls, value):
@@ -203,3 +203,4 @@ class Institution(BaseModel):
     address: Optional[str]
     services: Optional[str]
     specialties: Optional[str]
+    activate: Optional[int]
