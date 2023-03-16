@@ -1,6 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, validator
-from datetime import datetime, date
+from pydantic import BaseModel
 
 
 class Institution(BaseModel):
@@ -30,13 +29,4 @@ class InstitutionUp(BaseModel):
     specialties: Optional[str]
     activate: Optional[int]
 
-    @validator("activate", pre=True)
-    def parse_birthdate(cls, value):
-        # XXX: Tenemos un problema entre schemas y modelos que no son compatibles
-        # por lo que esto es necesario. No eliminar.
-        if isinstance(value, str):
-            return datetime.strptime(value, "%d/%m/%Y")
-        return datetime.combine(value, datetime.min.time())
-
-    class Config:
-        orm_mode = True
+    

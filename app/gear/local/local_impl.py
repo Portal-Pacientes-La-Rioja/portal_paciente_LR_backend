@@ -517,7 +517,8 @@ class LocalImpl:
         
     def get_institutions_by_id(self, institutions_id: int):
         try:
-            value = self.db.query(model_institution).where(model_institution.id == institutions_id) .first()
+            value = self.db.query(model_institution).where(model_institution.id == institutions_id).first()
+          
         except Exception as e:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="Institution cannot be retrieved.", code=202)
@@ -526,10 +527,9 @@ class LocalImpl:
     def on_off_institution(self, institution: schemas_institution_up):
         try:
             existing_institution = (
-                self.db.query(model_institution)
-                .where(model_institution.id == institution.id)
-                .first()
+                self.db.query(model_institution).where(model_institution.id == institution.id).first()
             )
+            
             existing_institution.activate = institution.activate
             self.db.commit()
         except Exception as e:

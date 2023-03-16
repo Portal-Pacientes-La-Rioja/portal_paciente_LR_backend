@@ -1,10 +1,6 @@
 from sqlalchemy import Column, Integer, String
 
 from app.config.database import Base
-from sqlalchemy import Column, Integer, String, Table, MetaData
-
-from app.config.database import Base
-metadata_obj = MetaData()
 
 class Institutions(Base):
 
