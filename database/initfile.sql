@@ -13,6 +13,38 @@
 
 /* GRANT ALL ON `portal_paciente_LR`.* TO 'root'@'%';*/
 
+DROP TABLE IF EXISTS `institutions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `institutions` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) CHARACTER SET latin1 COLLATE latin1_spanish_ci DEFAULT NULL,
+  `tipology` varchar(100) CHARACTER SET latin1 COLLATE latin1_spanish_ci DEFAULT NULL,
+  `tipology_category` varchar(100) CHARACTER SET latin1 COLLATE latin1_spanish_ci DEFAULT NULL,
+  `dependecy` varchar(100) CHARACTER SET latin1 COLLATE latin1_spanish_ci DEFAULT NULL,
+  `department` varchar(100) CHARACTER SET latin1 COLLATE latin1_spanish_ci DEFAULT NULL,
+  `location` varchar(100) CHARACTER SET latin1 COLLATE latin1_spanish_ci DEFAULT NULL,
+  `address` varchar(100) CHARACTER SET latin1 COLLATE latin1_spanish_ci DEFAULT NULL,
+  `services` varchar(100) CHARACTER SET latin1 COLLATE latin1_spanish_ci DEFAULT NULL,
+  `specialties` varchar(100) CHARACTER SET latin1 COLLATE latin1_spanish_ci DEFAULT NULL,
+  `activate`bigint(1) NOT NULL,
+
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1 COLLATE=latin1_spanish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `institutions`
+--
+
+LOCK TABLES `institutions` WRITE;
+/*!40000 ALTER TABLE `institutions` DISABLE KEYS */;
+INSERT INTO `institutions` (`id`,`name`,`tipology`,`tipology_category`,`dependecy`,`department`,`location`,`address`,`services`,`specialties`, `activate`) VALUES (1,'Chilecito','tipologia','t1','t2','t3','t4','t5','t','t7',1);
+
+/*!40000 ALTER TABLE `institutions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+
 DROP TABLE IF EXISTS `category`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
@@ -402,7 +434,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` (`id`, `username`, `password`, `id_person`, `id_user_status`) VALUES (1,'admin','$2b$12$nW9bzZJggFAyYYI.soU8GurU.0g82ftRBNfn.v9vtIDWmt/RJdgr2',1,1);
+INSERT INTO `user` (`id`, `username`, `password`, `id_person`, `id_user_status`,`is_admin`) VALUES (1,'admin','$2b$12$nW9bzZJggFAyYYI.soU8GurU.0g82ftRBNfn.v9vtIDWmt/RJdgr2',1,1,1);
 INSERT INTO `user` (`id`, `username`, `password`, `id_person`, `id_user_status`) VALUES (2,'earias','$2b$12$nW9bzZJggFAyYYI.soU8GurU.0g82ftRBNfn.v9vtIDWmt/RJdgr2',2,1);
 INSERT INTO `user` (`id`, `username`, `password`, `id_person`, `id_user_status`) VALUES (3,'oocanto','$2b$12$nW9bzZJggFAyYYI.soU8GurU.0g82ftRBNfn.v9vtIDWmt/RJdgr2',3,1);
 INSERT INTO `user` (`id`, `username`, `password`, `id_person`, `id_user_status`) VALUES (4,'esabato','$2b$12$nW9bzZJggFAyYYI.soU8GurU.0g82ftRBNfn.v9vtIDWmt/RJdgr2',4,1);
@@ -494,6 +526,29 @@ INSERT INTO `user_role` (`id`, `id_role`, `id_user`) VALUES (3,2,3);
 INSERT INTO `user_role` (`id`, `id_role`, `id_user`) VALUES (4,3,4);
 /*!40000 ALTER TABLE `user_role` ENABLE KEYS */;
 UNLOCK TABLES;
+
+
+DROP TABLE IF EXISTS `institutos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `institutos` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `name`  varchar(100) COLLATE latin1_spanish_ci NULL,
+  `tipology` JSON DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1 COLLATE=latin1_spanish_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `institutos`
+--
+
+LOCK TABLES `institutos` WRITE;
+/*!40000 ALTER TABLE `institutos` DISABLE KEYS */;
+INSERT INTO `institutos` (`id`, `name`,`tipology`) VALUES (1,'Olta',JSON_ARRAY('TP1','TP2','TP3'));
+/*!40000 ALTER TABLE `institutos` ENABLE KEYS */;
+UNLOCK TABLES;
+
 
 --
 -- Table structure for table `user_status`
