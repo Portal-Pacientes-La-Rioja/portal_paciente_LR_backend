@@ -1,3 +1,5 @@
+from typing import Dict
+
 from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import relationship
 
@@ -5,7 +7,6 @@ from app.config.database import Base
 
 
 class Institutions(Base):
-
     __tablename__ = "institutions"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -27,9 +28,12 @@ class Institutions(Base):
                                   secondary="institutions_especialidades",
                                   back_populates="institutions")
 
-    def __init__(self, id: int, name: str, tipology: str, tipology_category: str, dependecy: str,
+    def as_dict(self) -> Dict:
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+    """
+    def __init__(self, name: str, tipology: str, tipology_category: str, dependecy: str,
                  department: str, location: str, address: str, activate: int, lat: float, long: float):
-        self.id = id
         self.name = name        
         self.tipologia = tipology
         self.categoria_tipologia = tipology_category
@@ -40,3 +44,4 @@ class Institutions(Base):
         self.activate = activate
         self.lat = lat
         self.long = long
+    """

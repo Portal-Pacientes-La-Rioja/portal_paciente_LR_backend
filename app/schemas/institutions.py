@@ -1,42 +1,39 @@
 from typing import Optional
-from pydantic import BaseModel, validator
-from datetime import datetime, date
+
+from pydantic import BaseModel
 
 
+# TODO: Add relationship between services and specialities
 class Institution(BaseModel):
-    #id: Optional[int]
-    name: Optional[str]
-    tipology: Optional[str]   
-    tipology_category: Optional[str]
-    dependecy: Optional[str]
-    department: Optional[str]
-    location: Optional[str]
-    address: Optional[str]
-    services: Optional[str]
-    specialties: Optional[str]
+    name: str
+    code: str
+    address: str
+    lat: Optional[float]
+    long: Optional[float]
+    tipology: str
+    tipology_category: str
+    dependecy: str
+    department: str
+    location: str
+    city: str
     activate = 1
 
 
 class InstitutionUp(BaseModel):
-    id: Optional[int]
     name: Optional[str]
+    code: Optional[str]
+    address: Optional[str]
+    lat: Optional[float]
+    long: Optional[float]
     tipology: Optional[str]   
     tipology_category: Optional[str]
     dependecy: Optional[str]
     department: Optional[str]
     location: Optional[str]
-    address: Optional[str]
-    services: Optional[str]
-    specialties: Optional[str]
+    city: Optional[str]
     activate: Optional[int]
-
-    @validator("activate", pre=True)
-    def parse_birthdate(cls, value):
-        # XXX: Tenemos un problema entre schemas y modelos que no son compatibles
-        # por lo que esto es necesario. No eliminar.
-        if isinstance(value, str):
-            return datetime.strptime(value, "%d/%m/%Y")
-        return datetime.combine(value, datetime.min.time())
+    # services: Optional[str]
+    # specialties: Optional[str]
 
     class Config:
         orm_mode = True

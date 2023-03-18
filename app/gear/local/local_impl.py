@@ -45,6 +45,7 @@ from app.schemas.responses import ResponseNOK, ResponseOK
 from app.schemas.user import User as schema_user
 from app.schemas.institutions import Institution as schemas_institution
 from app.schemas.institutions import InstitutionUp as schemas_institution_up
+from typing import List, Dict
 
 
 
@@ -455,7 +456,6 @@ class LocalImpl:
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
         
     def create_institution(self, institution: schemas_institution) -> Union[ResponseOK, ResponseNOK]:
-        
         buff_institution = (
             self.db.query(model_institution)
             .where(model_institution.name == institution.name)
@@ -464,60 +464,40 @@ class LocalImpl:
         if buff_institution is not None:
             return ResponseNOK(value="", message="Institution already exists.", code=417)
         try:
-            
+            # TODO: Add relationship between services and specialities
             new_inst = model_institution(
-                 None, 
-                 institution.name,
-                 institution.tipology,
-                 institution.tipology_category,
-                 institution.dependecy,
-                 institution.department,
-                 institution.location,
-                 institution.address,
-                 institution.services,
-                 institution.specialties,
-                 institution.activate
-                )
+                name=institution.name,
+                codigo=institution.code,
+                domicilio=institution.address,
+                lat=institution.lat,
+                long=institution.long,
+                tipologia=institution.tipology,
+                categoria_tipologia=institution.tipology_category,
+                dependencia=institution.dependecy,
+                departamento=institution.department,
+                localidad=institution.location,
+                ciudad=institution.city,
+                activate=institution.activate,
+            )
             self.db.add(new_inst)
             self.db.commit()
-
         except Exception as e:
             self.db.rollback()
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="Institution not created.", code=417)
         return ResponseOK(message="Institution created successfully.", code=201)
     
-    def get_institutions(self):
-
+    def get_institutions(self) -> Union[List[Dict], ResponseNOK]:
         try:
-            result = []
-            collection = self.db.query(model_institution).all()
-            for u in collection:
-                result.append({
-                    "id": u.id, 
-                    "name": u.name, 
-                    "tipology": u.tipology,
-                    "tipology_category": u.tipology_category,
-                    "dependecy": u.dependecy,
-                    "department": u.department,
-                    "location": u.location,
-                    "address": u.address,
-                    "services": u.services,
-                    "specialties": u.specialties,
-                    "activate": u.activate
-                })
-
-            return result
+            institution_list = self.db.query(model_institution).all()
+            return [institution.as_dict() for institution in institution_list]
         except Exception as e:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
-    
 
-        
-        
     def get_institutions_by_id(self, institutions_id: int):
         try:
-            value = self.db.query(model_institution).where(model_institution.id == institutions_id) .first()
+            value = self.db.query(model_institution).where(model_institution.id == institutions_id).first()
         except Exception as e:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="Institution cannot be retrieved.", code=202)
@@ -527,7 +507,7 @@ class LocalImpl:
         try:
             existing_institution = (
                 self.db.query(model_institution)
-                .where(model_institution.id == institution.id)
+                .where(model_institution.name == institution.name)
                 .first()
             )
             existing_institution.activate = institution.activate
@@ -538,33 +518,33 @@ class LocalImpl:
             return ResponseNOK(message="Not updated.", code=417)
 
         return ResponseOK(message="Updated successfully.", code=201)
-
     
     def update_institution(self, institution: schemas_institution_up):
-        
-        buff_person = (
+        buff_institution = (
             self.db.query(model_institution)
             .where(model_institution.name == institution.name)
             .first()
         )
-        if buff_person is not None:
+        if buff_institution is not None:
             return ResponseNOK(value="", message="Institution already exists.", code=417)
 
         try:
-            existing_institution = (
+            existing_institution = (  # type: model_institution
                 self.db.query(model_institution)
-                .where(model_institution.id == institution.id)
+                .where(model_institution.name == institution.name)
                 .first()
             )
-            existing_institution.name = institution.name,
-            existing_institution.tipology = institution.tipology,
-            existing_institution.tipology_category = institution.tipology_category,
-            existing_institution.dependecy = institution.dependecy,
-            existing_institution.department = institution.department,
-            existing_institution.location = institution.location,
-            existing_institution.address = institution.address,
-            existing_institution.services = institution.services,
-            existing_institution.specialties = institution.specialties
+            existing_institution.name = institution.name
+            existing_institution.codigo = institution.code
+            existing_institution.domicilio = institution.address
+            existing_institution.lat = institution.lat
+            existing_institution.long = institution.long
+            existing_institution.tipologia = institution.tipology
+            existing_institution.categoria_tipologia = institution.tipology_category
+            existing_institution.dependecia = institution.dependecy
+            existing_institution.departmento = institution.department
+            existing_institution.localidad = institution.location
+            existing_institution.ciudad = institution.city
             self.db.commit()
         except Exception as e:
             self.db.rollback()
@@ -572,7 +552,6 @@ class LocalImpl:
             return ResponseNOK(message="Institution not updated.", code=417)
 
         return ResponseOK(message="Institution updated successfully.", code=201)
-
 
     def create_person(self, person: schema_create_person):
         buff_person = (
