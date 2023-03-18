@@ -1,10 +1,8 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 
 from app.config.database import Base
-from sqlalchemy import Column, Integer, String, Table, MetaData
 
-from app.config.database import Base
-metadata_obj = MetaData()
 
 class Institutions(Base):
 
@@ -12,22 +10,26 @@ class Institutions(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
-    tipology = Column(String(100), nullable=False)
-    tipology_category = Column(String(100), nullable=False)
-    dependecy = Column(String(100), nullable=False)
-    department = Column(String(100), nullable=False)
-    location = Column(String(100), nullable=False)
-    address = Column(String(100), nullable=False)
-    services = Column(String(100), nullable=False)
-    specialties = Column(String(100), nullable=False)
-    activate = Column(Integer)
+    codigo = Column(String(100), nullable=False)
+    domicilio = Column(String(100), nullable=False)
+    lat = Column(String(20), nullable=False)
+    long = Column(String(20), nullable=False)
+    tipologia = Column(String(100), nullable=False)
+    categoria_tipologia = Column(String(100), nullable=False)
+    dependencia = Column(String(100), nullable=False)
+    departamento = Column(String(100), nullable=False)
+    localidad = Column(String(100), nullable=False)
+    ciudad = Column(String(100), nullable=False)
+    activate = Column(Integer, default=1)
 
-    def __init__(self, id: int,name: str, tipology: str, tipology_category: str, dependecy: str,
+    services = relationship("Services", secondary="institutions_services", back_populates="institutions")
+    especialidades = relationship("Especialidades",
+                                  secondary="institutions_especialidades",
+                                  back_populates="institutions")
+
+    def __init__(self, id: int, name: str, tipology: str, tipology_category: str, dependecy: str,
                  department: str, location: str, address: str, services: str, specialties: str,
-                 activate: int
-                 ):
-                 
-        
+                 activate: int):
         self.id = id
         self.name = name        
         self.tipology = tipology
@@ -39,4 +41,3 @@ class Institutions(Base):
         self.services = services
         self.specialties = specialties
         self.activate = activate
-
