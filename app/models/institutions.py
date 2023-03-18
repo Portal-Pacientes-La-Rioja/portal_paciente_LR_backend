@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import relationship
 
 from app.config.database import Base
@@ -12,8 +12,8 @@ class Institutions(Base):
     name = Column(String(100), nullable=False)
     codigo = Column(String(100), nullable=False)
     domicilio = Column(String(100), nullable=False)
-    lat = Column(String(20), nullable=False)
-    long = Column(String(20), nullable=False)
+    lat = Column(Float, nullable=True)
+    long = Column(Float, nullable=True)
     tipologia = Column(String(100), nullable=False)
     categoria_tipologia = Column(String(100), nullable=False)
     dependencia = Column(String(100), nullable=False)
@@ -28,16 +28,15 @@ class Institutions(Base):
                                   back_populates="institutions")
 
     def __init__(self, id: int, name: str, tipology: str, tipology_category: str, dependecy: str,
-                 department: str, location: str, address: str, services: str, specialties: str,
-                 activate: int):
+                 department: str, location: str, address: str, activate: int, lat: float, long: float):
         self.id = id
         self.name = name        
-        self.tipology = tipology
-        self.tipology_category = tipology_category
-        self.dependecy = dependecy
-        self.department = department
-        self.location = location
-        self.address = address
-        self.services = services
-        self.specialties = specialties
+        self.tipologia = tipology
+        self.categoria_tipologia = tipology_category
+        self.dependecia = dependecy
+        self.departmento = department
+        self.localidad = location
+        self.domicilio = address
         self.activate = activate
+        self.lat = lat
+        self.long = long
