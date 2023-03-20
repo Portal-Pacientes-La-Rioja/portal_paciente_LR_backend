@@ -11,9 +11,9 @@ RUN pip install mysqlclient
 
 COPY ./app /code/app
 
-COPY ./alembic /alembic
+COPY ./alembic /code/alembic
 
-COPY ./alembic.ini /alembic
+COPY ./alembic.ini /code/
 
 COPY ./templates/ /code/app/templates/
 
