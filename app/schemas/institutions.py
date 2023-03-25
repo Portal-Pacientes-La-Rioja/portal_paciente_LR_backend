@@ -6,17 +6,20 @@ from pydantic import BaseModel
 # TODO: Add relationship between services and specialities
 class Institution(BaseModel):
     name: str
-    code: str
-    address: str
+    codigo: str
+    domicilio: str
     lat: Optional[float]
     long: Optional[float]
-    tipology: str
-    tipology_category: str
-    dependecy: str
-    department: str
-    location: str
-    city: str
-    activate = 1
+    tipologia: str
+    categoria_tipologia: str
+    dependencia: str
+    departamento: str
+    localidad: str
+    ciudad: str
+    activate: int
+
+    class Config:
+        orm_mode = True
 
 
 class InstitutionUp(BaseModel):

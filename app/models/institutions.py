@@ -29,19 +29,4 @@ class Institutions(Base):
                                   back_populates="institutions")
 
     def as_dict(self) -> Dict:
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-    """
-    def __init__(self, name: str, tipology: str, tipology_category: str, dependecy: str,
-                 department: str, location: str, address: str, activate: int, lat: float, long: float):
-        self.name = name        
-        self.tipologia = tipology
-        self.categoria_tipologia = tipology_category
-        self.dependecia = dependecy
-        self.departmento = department
-        self.localidad = location
-        self.domicilio = address
-        self.activate = activate
-        self.lat = lat
-        self.long = long
-    """
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns if c.name != "id"}
