@@ -490,7 +490,7 @@ class LocalImpl:
     def get_institutions(self) -> Union[List[Dict], ResponseNOK]:
         try:
             institution_list = self.db.query(model_institution).all()
-            return [institution.as_dict() for institution in institution_list]
+            return institution_list
         except Exception as e:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
