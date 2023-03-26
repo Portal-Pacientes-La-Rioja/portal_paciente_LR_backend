@@ -1,6 +1,6 @@
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Union, Dict
 
 from fastapi import Depends, HTTPException, status, File, UploadFile
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
@@ -14,13 +14,14 @@ from app.gear.recover_password.recover_password import (
     send_recovery_password_mail,
     recover_password,
 )
-from app.gear.validation_mail.validation_mail import validate_email
 from app.gear.turnos.turnos_mailer import send_turno_mail
+from app.gear.validation_mail.validation_mail import validate_email
 from app.main import get_db
 from app.routes import auth
 from app.routes.common import router_local
 from app.schemas.admin_status import AdminStatus
 from app.schemas.category import Category
+from app.schemas.especialidades import Especialidades
 from app.schemas.gender import Gender
 from app.schemas.message import Message
 from app.schemas.message import ReadMessage
@@ -34,9 +35,11 @@ from app.schemas.person_user import PersonUser as schema_person_user
 from app.schemas.responses import HTTPError
 from app.schemas.responses import ResponseOK, ResponseNOK
 from app.schemas.role import Role
+from app.schemas.services import Services
 from app.schemas.token import Token
 
 oauth_schema = OAuth2PasswordBearer(tokenUrl="/login")
+oauth_schema_admin = OAuth2PasswordBearer(tokenUrl="/login-admin")
 
 log = MainLogger()
 module = logging.getLogger(__name__)
@@ -380,3 +383,41 @@ async def enviar_turno_mail(person_id: str, subject: str, body: str):
     return ResponseOK(
         message="Email send it", code=200
     )
+
+
+@router_local.get(
+    "/especialidades",
+    response_model=List[Especialidades],
+    tags=["Institutions"],
+)
+async def get_especialidades(db: Session = Depends(get_db)):
+    return await LocalImpl(db).get_especialidades()
+
+
+@router_local.get(
+    "/especialidades/{codigo_esp}",
+    response_model=Union[Especialidades, Dict],
+    tags=["Institutions"],
+)
+async def get_especialidad_by_code(codigo_esp: int, db: Session = Depends(get_db)):
+    especialidad = await LocalImpl(db).get_especialidades(codigo_esp)
+    return especialidad if especialidad else {}
+
+
+@router_local.get(
+    "/servicios/",
+    response_model=List[Services],
+    tags=["Institutions"],
+)
+async def get_servicios(db: Session = Depends(get_db)):
+    return await LocalImpl(db).get_services()
+
+
+@router_local.get(
+    "/servicios/{id_services}",
+    response_model=Union[Services, Dict],
+    tags=["Institutions"],
+)
+async def get_servicios_by_id_service(id_services: int, db: Session = Depends(get_db)):
+    servicio = await LocalImpl(db).get_services(id_services)
+    return servicio if servicio else {}

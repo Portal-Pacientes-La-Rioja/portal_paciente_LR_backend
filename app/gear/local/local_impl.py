@@ -34,6 +34,8 @@ from app.models.person_message import PersonMessage as model_person_message
 from app.models.person_status import PersonStatus as model_person_status
 from app.models.role import Role as model_role
 from app.models.user import User as model_user
+from app.models.especialidades import Especialidades as model_especialidades
+from app.models.services import Services as model_services
 from app.schemas.category_enum import CategoryEnum
 from app.schemas.message import Message, ReadMessage
 from app.schemas.person import (
@@ -1062,3 +1064,15 @@ class LocalImpl:
             message="File downloaded successfully.",
             code=201,
         )
+
+    async def get_especialidades(self, codigo: Optional[int] = None)\
+            -> Union[List[model_especialidades], model_especialidades]:
+        if codigo is None:
+            return self.db.query(model_especialidades).all()
+        return self.db.query(model_especialidades).where(model_especialidades.codigo == codigo).first()
+
+    async def get_services(self, id_service: Optional[int] = None)\
+            -> Union[List[model_services], model_services]:
+        if id_service is None:
+            return self.db.query(model_services).all()
+        return self.db.query(model_services).where(model_services.id == id_service).first()

@@ -7,20 +7,6 @@ from app.schemas.persons import PersonsReduced, PersonUsername
 from app.schemas.returned_object import ReturnMessage
 
 
-# TODO: dev purpose. remove this
-class Persons():
-    username: str
-    name: str
-    accepted: bool
-    is_deleted: bool
-
-    def __init__(self, username, name, accepted, is_deleted):
-        self.username = username
-        self.name = name
-        self.accepted = accepted
-        self.is_deleted = is_deleted
-
-
 def list_of_persons(only_accepted: bool, db: Session):
     """
     Return list of persons, only name surname and if is accepted or
