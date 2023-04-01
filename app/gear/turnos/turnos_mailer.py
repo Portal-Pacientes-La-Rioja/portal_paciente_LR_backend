@@ -17,9 +17,14 @@ module = logging.getLogger(__name__)
 
 
 async def send_turno_mail(person_id: str, subject: str, body: str) -> bool:
-    existing_person = (
-        db.query(Person).where(Person.id == person_id).first()
-    )  # type: Person
+    try:
+        existing_person = (
+            db.query(Person).where(Person.id == person_id).first()
+        )  # type: Person
+    except Exception as e:
+        log.log_error_message("Error querying Person object: " + str(e), module)
+        db.rollback()
+        return False
 
     message = MessageSchema(
         subject=subject,
@@ -31,6 +36,10 @@ async def send_turno_mail(person_id: str, subject: str, body: str) -> bool:
     # TODO: Almacenar person_id + subject (y un status? o fecha?) en la base de datos,
     #  después vemos que se puede hacer
 
-    await send_email(message)
+    try:
+        await send_email(message)
+    except Exception as e:
+        log.log_error_message("Error sending email: " + str(e), module)
+        return False
     log.log_info_message("Email sent successfully.", module)
     return True
