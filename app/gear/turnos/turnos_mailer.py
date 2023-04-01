@@ -23,6 +23,7 @@ async def send_turno_mail(person_id: str, subject: str, body: str) -> bool:
         )  # type: Person
     except Exception as e:
         log.log_error_message("Error querying Person object: " + str(e), module)
+        db.rollback()
         return False
 
     message = MessageSchema(
