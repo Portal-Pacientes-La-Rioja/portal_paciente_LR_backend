@@ -5,15 +5,17 @@ Revises: 476a7d9e72da
 Create Date: 2023-03-16 01:19:51.822751
 
 """
-from alembic import op
-import sqlalchemy as sa
 import csv
-from sqlalchemy import orm
 from pathlib import Path
+
+import sqlalchemy as sa
+from alembic import op
+from sqlalchemy import orm
+
 from app.models.especialidades import Especialidades
 from app.models.services import Services
-bind = op.get_bind()
-session = orm.Session(bind=bind)
+
+session = orm.Session(bind=op)
 
 # revision identifiers, used by Alembic.
 revision = '1382cc7242e0'
