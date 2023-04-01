@@ -12,7 +12,7 @@ class Institutions(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
     codigo = Column(String(100), nullable=False)
-    domicilio = Column(String(100), nullable=False)
+    domicilio = Column(String(500), nullable=False)
     lat = Column(Float, nullable=True)
     long = Column(Float, nullable=True)
     tipologia = Column(String(100), nullable=False)

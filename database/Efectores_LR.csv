@@ -1,4 +1,4 @@
-codigo,NOMBRE EFECTOR,DOMICILIO,TIPO EFECTOR,CATEGORIZACION,DEPENDENCIA ADMINISTRATIVA,DEPARTAMENTO,LOCALIDAD,CIUDAD
+codigo,name,domicilio,tipo,categoria,dependencia,departamento,localidad,ciudad
 50460422155699,CAPS LA ROTONDA,AVENIDA CIRCUNVALACIÓN S/N,"Centro de salud ""A""",Establecimiento para la salud sin internación de diagnóstico y tratamiento,Provincial,CHILECITO,CHILECITO,CHILECITO
 50460632155525,CENTRO DE SALUD MIRAFLORES,LOC. MIRAFLORES,"Centro de salud ""A""",Establecimiento para la salud,Provincial,GENERAL OCAMPO,AMBIL,GRAL. OCAMPO
 52460142155607,CAPS DEPARTAMENTO INTERDICIPLINARIO DE SALUD MENTAL INFANTIL,CALLE EL CHACHO S/N BARRIO HOSPITAL,"Centro de salud ""A""",Establecimiento para la salud,Provincial,CAPITAL,LA RIOJA,LA RIOJA
