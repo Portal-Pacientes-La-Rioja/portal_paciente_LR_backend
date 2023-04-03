@@ -22,6 +22,7 @@ def get_db():
 from app.routes.hsi import hsi
 from app.routes.local import local
 from app.routes.local import admin
+from app.routes.local import institution
 from app.routes.sumar import sumar
 from app.config.config import LR_BASE_API
 
@@ -51,6 +52,7 @@ app.add_middleware(
 app.include_router(hsi.router_hsi)
 app.include_router(local.router_local)
 app.include_router(admin.router_admin)
+app.include_router(institution.router_institutions)
 app.include_router(sumar.router_sumar)
 
 from fastapi.staticfiles import StaticFiles
