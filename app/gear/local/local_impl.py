@@ -1,6 +1,7 @@
 import base64
 import uuid
 from datetime import datetime, timedelta
+from typing import List, Dict
 from typing import Optional, Union
 
 from fastapi import Request, status, File, UploadFile
@@ -22,21 +23,22 @@ from app.gear.log.main_logger import MainLogger, logging
 from app.gear.validation_mail.validation_mail import send_validation_mail
 from app.models.admin_status import AdminStatus as model_admin_status
 from app.models.category import Category as model_category
+from app.models.especialidades import Especialidades as model_especialidades
 from app.models.expiration_black_list import (
     ExpirationBlackList as model_expiration_black_list,
 )
 from app.models.genders import Gender as model_gender
+from app.models.institutions import Institutions as model_institution
 from app.models.message import Message as model_message
 from app.models.permission import Permission
 from app.models.person import Person as model_person
-from app.models.institutions import Institutions as model_institution
 from app.models.person_message import PersonMessage as model_person_message
 from app.models.person_status import PersonStatus as model_person_status
 from app.models.role import Role as model_role
-from app.models.user import User as model_user
-from app.models.especialidades import Especialidades as model_especialidades
 from app.models.services import Services as model_services
+from app.models.user import User as model_user
 from app.schemas.category_enum import CategoryEnum
+from app.schemas.institutions import Institution as schemas_institution
 from app.schemas.message import Message, ReadMessage
 from app.schemas.person import (
     Person as schema_person,
@@ -45,10 +47,7 @@ from app.schemas.person import (
 from app.schemas.person_user import PersonUser as schema_person_user
 from app.schemas.responses import ResponseNOK, ResponseOK
 from app.schemas.user import User as schema_user
-from app.schemas.institutions import Institution as schemas_institution
-from app.schemas.institutions import InstitutionUp as schemas_institution_up
-from typing import List, Dict
-
+from app.gear.geolocation import geolocator
 
 
 class LocalImpl:
@@ -470,8 +469,6 @@ class LocalImpl:
                 name=institution.name,
                 codigo=institution.codigo,
                 domicilio=institution.domicilio,
-                lat=institution.lat,
-                long=institution.long,
                 tipologia=institution.tipologia,
                 categoria_tipologia=institution.categoria_tipologia,
                 dependencia=institution.dependencia,
@@ -488,6 +485,10 @@ class LocalImpl:
                 .filter(model_especialidades.id.in_(institution.especialidades))
                 .all())
             new_inst.especialidades = especialidades
+
+            lat, long = geolocator.get_lat_long_from_address(institution.domicilio)
+            new_inst.lat = lat
+            new_inst.long = long
 
             self.db.add(new_inst)
             self.db.commit()

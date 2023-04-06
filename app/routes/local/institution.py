@@ -3,13 +3,12 @@ from typing import List
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
+from app.gear.local.local_impl import LocalImpl
 from app.main import get_db
 from app.routes.common import router_institutions
-from app.schemas.responses import ResponseOK, ResponseNOK
 from app.schemas.institutions import Institution as schemas_institution
 from app.schemas.institutions import InstitutionWithID as schemas_institution_with_id
-from app.gear.local.local_impl import LocalImpl
-from app.schemas.institutions import InstitutionUp as schemas_institution_up
+from app.schemas.responses import ResponseOK, ResponseNOK
 
 
 @router_institutions.put(

@@ -45,23 +45,3 @@ class Institution(BaseModel):
 
 class InstitutionWithID(Institution):
     id: int
-
-
-class InstitutionUp(BaseModel):
-    name: Optional[str]
-    code: Optional[str]
-    address: Optional[str]
-    lat: Optional[float]
-    long: Optional[float]
-    tipology: Optional[str]   
-    tipology_category: Optional[str]
-    dependecy: Optional[str]
-    department: Optional[str]
-    location: Optional[str]
-    city: Optional[str]
-    activate: Optional[int]
-    # services: Optional[str]
-    # specialties: Optional[str]
-
-    class Config:
-        orm_mode = True
