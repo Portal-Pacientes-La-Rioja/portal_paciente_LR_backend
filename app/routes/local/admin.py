@@ -16,6 +16,7 @@ from app.routes.common import router_admin
 from app.schemas.persons import PersonUsername, PersonsReduced
 from app.schemas.returned_object import ReturnMessage
 
+
 @router_admin.delete("/person", name="Remove a Person",
                      response_model=ReturnMessage, description="Remove a Person from the system")
 async def delete_person(person_username: PersonUsername, db: Session = Depends(get_db)):

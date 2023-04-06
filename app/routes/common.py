@@ -20,7 +20,7 @@ router_admin = APIRouter(
 )
 
 router_institutions = APIRouter(
-    tags=["Institution"],
+    tags=["Institutions"],
     prefix=LR_BASE_API,
     responses={404: {"description": "Not Found"}}
 )

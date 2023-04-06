@@ -1,9 +1,27 @@
-from typing import Optional
+from typing import Optional, List, Union
+from sqlalchemy.orm.collections import InstrumentedList
 
 from pydantic import BaseModel
 
 
-# TODO: Add relationship between services and specialities
+class Services(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class Especialidades(BaseModel):
+    id: int
+    codigo: str
+    name: str
+    resolucion: str
+
+    class Config:
+        orm_mode = True
+
+
 class Institution(BaseModel):
     name: str
     codigo: str
@@ -18,8 +36,15 @@ class Institution(BaseModel):
     ciudad: str
     activate: int
 
+    services: Union[List[int], List[Services]] = []
+    especialidades: Union[List[int], List[Especialidades]] = []
+
     class Config:
         orm_mode = True
+
+
+class InstitutionWithID(Institution):
+    id: int
 
 
 class InstitutionUp(BaseModel):
