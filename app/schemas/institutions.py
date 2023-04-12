@@ -5,11 +5,12 @@ from pydantic import BaseModel
 
 # TODO: Add relationship between services and specialities
 class Institution(BaseModel):
+    id: int
     name: str
     codigo: str
     domicilio: str
-    lat: Optional[float]
-    long: Optional[float]
+    lat: Optional[int]
+    long: Optional[int]
     tipologia: str
     categoria_tipologia: str
     dependencia: str
@@ -26,8 +27,8 @@ class InstitutionUp(BaseModel):
     name: Optional[str]
     code: Optional[str]
     address: Optional[str]
-    lat: Optional[float]
-    long: Optional[float]
+    lat: Optional[int]
+    long: Optional[int]
     tipology: Optional[str]   
     tipology_category: Optional[str]
     dependecy: Optional[str]
