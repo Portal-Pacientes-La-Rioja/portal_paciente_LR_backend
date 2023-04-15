@@ -9,8 +9,8 @@ class Institution(BaseModel):
     name: str
     codigo: str
     domicilio: str
-    lat: Optional[int]
-    long: Optional[int]
+    lat: Optional[float]
+    long: Optional[float]
     tipologia: str
     categoria_tipologia: str
     dependencia: str
@@ -27,8 +27,8 @@ class InstitutionUp(BaseModel):
     name: Optional[str]
     code: Optional[str]
     address: Optional[str]
-    lat: Optional[int]
-    long: Optional[int]
+    lat: Optional[float]
+    long: Optional[float]
     tipology: Optional[str]   
     tipology_category: Optional[str]
     dependecy: Optional[str]
