@@ -23,6 +23,7 @@ class Especialidades(BaseModel):
 
 
 class Institution(BaseModel):
+    id: int
     name: str
     codigo: str
     domicilio: str
