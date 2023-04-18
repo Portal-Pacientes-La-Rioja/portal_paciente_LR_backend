@@ -7,7 +7,7 @@ LatLong = namedtuple("LatLong", "lat, long")
 
 class Geolocation:
     def __init__(self):
-        self.geolocator = Nominatim(user_agent="portal-paciente", timeout=5)
+        self.geolocator = Nominatim(user_agent="portal-paciente", timeout=15)
 
     def get_lat_long_from_address(self, address: str) -> LatLong:
         try:
