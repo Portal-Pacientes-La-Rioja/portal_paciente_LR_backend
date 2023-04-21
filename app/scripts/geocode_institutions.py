@@ -21,8 +21,8 @@ for address in addresses:
     direction = address[1]
     location = geo.geocode(direction)
     if location is not None:
-        lat = location.latitude
-        long = location.longitude
+        lat = location.latitude if location.latitude is not None else 0
+        long = location.longitude if location.longitude is not None else 0
         cursor.execute('UPDATE institutions SET `lat`=%s, `long`=%s WHERE id=%s', (lat, long, institution_id))
         conn.commit()
     else:
