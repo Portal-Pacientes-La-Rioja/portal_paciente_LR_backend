@@ -27,6 +27,7 @@ class Institutions(Base):
     especialidades = relationship("Especialidades",
                                   secondary="institutions_especialidades",
                                   back_populates="institutions")
+    user = relationship("User", secondary="institutions_user", back_populates="institutions")
 
     def as_dict(self) -> Dict:
         return {c.name: getattr(self, c.name) for c in self.__table__.columns if c.name != "id"}
