@@ -534,16 +534,17 @@ class LocalImpl:
     def update_institution(self, institution: schemas_institution):
         buff_institution = (
             self.db.query(model_institution)
-            .where(model_institution.name == institution.name)
+            .where(model_institution.id == institution.id)
             .first()
         )
         if buff_institution is None:
             return ResponseNOK(value="", message="Institution does not exists.", code=417)
 
         try:
+            # TODO: FIx this duplicated. https://github.com/Portal-Pacientes-La-Rioja/portal_paciente_LR_backend/issues/86
             existing_institution = (  # type: model_institution
                 self.db.query(model_institution)
-                .where(model_institution.name == institution.name)
+                .where(model_institution.id == institution.id)
                 .first()
             )
 
@@ -552,8 +553,8 @@ class LocalImpl:
             existing_institution.domicilio = institution.domicilio
             existing_institution.tipologia = institution.tipologia
             existing_institution.categoria_tipologia = institution.categoria_tipologia
-            existing_institution.dependecia = institution.dependencia
-            existing_institution.departmento = institution.departamento
+            existing_institution.dependencia = institution.dependencia
+            existing_institution.departamento = institution.departamento
             existing_institution.localidad = institution.localidad
             existing_institution.ciudad = institution.ciudad
 
