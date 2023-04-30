@@ -550,14 +550,17 @@ class LocalImpl:
             existing_institution.name = institution.name
             existing_institution.codigo = institution.codigo
             existing_institution.domicilio = institution.domicilio
-            existing_institution.lat = institution.lat
-            existing_institution.long = institution.long
             existing_institution.tipologia = institution.tipologia
             existing_institution.categoria_tipologia = institution.categoria_tipologia
             existing_institution.dependecia = institution.dependencia
             existing_institution.departmento = institution.departamento
             existing_institution.localidad = institution.localidad
             existing_institution.ciudad = institution.ciudad
+
+            # geolocalization
+            lat, long = geolocator.get_lat_long_from_address(institution.domicilio)
+            existing_institution.lat = lat
+            existing_institution.long = long
 
             services = self.db.query(model_services).filter(model_services.id.in_(institution.services)).all()
             existing_institution.services = services
