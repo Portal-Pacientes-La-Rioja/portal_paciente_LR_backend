@@ -496,7 +496,7 @@ class LocalImpl:
             self.db.rollback()
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="Institution not created.", code=417)
-        return ResponseOK(message="Institution created successfully.", code=201)
+        return ResponseOK(message="Institution created successfully.", code=201, value=str(new_inst.id))
     
     def get_institutions(self) -> Union[List[Dict], ResponseNOK]:
         try:
