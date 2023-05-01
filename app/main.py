@@ -24,6 +24,8 @@ from app.routes.local import local
 from app.routes.local import admin
 from app.routes.local import institution
 from app.routes.sumar import sumar
+from app.routes.local import datos_gob_ar
+
 from app.config.config import LR_BASE_API
 
 app = FastAPI(
@@ -54,6 +56,7 @@ app.include_router(local.router_local)
 app.include_router(admin.router_admin)
 app.include_router(institution.router_institutions)
 app.include_router(sumar.router_sumar)
+app.include_router(datos_gob_ar.router_datos)
 
 from fastapi.staticfiles import StaticFiles
 from app.config.config import LOCAL_FILE_DOWNLOAD_DIRECTORY
