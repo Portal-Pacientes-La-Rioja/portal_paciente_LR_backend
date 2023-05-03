@@ -1,4 +1,4 @@
-from geopy.geocoders import Nominatim
+from geopy.geocoders import GoogleV3
 
 from collections import namedtuple
 
@@ -7,7 +7,7 @@ LatLong = namedtuple("LatLong", "lat, long")
 
 class Geolocation:
     def __init__(self):
-        self.geolocator = Nominatim(user_agent="portal-paciente", timeout=15)
+        self.geolocator = GoogleV3(api_key="API_KEY", timeout=15)
 
     def get_lat_long_from_address(self, address: str) -> LatLong:
         try:
