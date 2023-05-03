@@ -486,7 +486,8 @@ class LocalImpl:
                 .all())
             new_inst.especialidades = especialidades
 
-            lat, long = geolocator.get_lat_long_from_address(institution.domicilio)
+            domicilio = f"{institution.domicilio}, {institution.localidad}, {institution.departamento}, Argentina"
+            lat, long = geolocator.get_lat_long_from_address(domicilio)
             new_inst.lat = lat
             new_inst.long = long
 
@@ -559,7 +560,8 @@ class LocalImpl:
             existing_institution.ciudad = institution.ciudad
 
             # geolocalization
-            lat, long = geolocator.get_lat_long_from_address(institution.domicilio)
+            domicilio = f"{institution.domicilio}, {institution.localidad}, {institution.departamento}, Argentina"
+            lat, long = geolocator.get_lat_long_from_address(domicilio)
             existing_institution.lat = lat
             existing_institution.long = long
 
