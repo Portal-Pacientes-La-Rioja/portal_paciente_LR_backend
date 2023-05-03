@@ -102,3 +102,6 @@ API_DATOS_GOB_AR = os.getenv("API_DATOS_GOB_AR", "https://apis.datos.gob.ar/geor
 API_DATOS_GOB_AR_PROVINCIAS = API_DATOS_GOB_AR + "provincias"
 API_DATOS_GOB_AR_DEPARTAMENTOS = API_DATOS_GOB_AR + "departamentos"
 API_DATOS_GOB_AR_LOCALIDADES = API_DATOS_GOB_AR + "localidades"
+
+# region google maps
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")

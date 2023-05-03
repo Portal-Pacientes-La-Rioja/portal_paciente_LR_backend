@@ -1,4 +1,5 @@
 from geopy.geocoders import GoogleV3
+from app.config.config import GOOGLE_MAPS_API_KEY
 
 from collections import namedtuple
 
@@ -7,7 +8,7 @@ LatLong = namedtuple("LatLong", "lat, long")
 
 class Geolocation:
     def __init__(self):
-        self.geolocator = GoogleV3(api_key="API_KEY", timeout=15)
+        self.geolocator = GoogleV3(api_key=f"{GOOGLE_MAPS_API_KEY}", timeout=15)
 
     def get_lat_long_from_address(self, address: str) -> LatLong:
         try:
