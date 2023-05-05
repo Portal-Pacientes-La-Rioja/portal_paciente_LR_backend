@@ -36,7 +36,7 @@ class Institution(BaseModel):
     localidad: str
     ciudad: str
     activate: int
-
+    telefono: int
     services: Union[List[int], List[Services]] = []
     especialidades: Union[List[int], List[Especialidades]] = []
 
