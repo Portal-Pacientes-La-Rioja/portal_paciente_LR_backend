@@ -57,7 +57,7 @@ python-dotenv==0.19.2
 python-jose==3.3.0
 python-multipart==0.0.5
 PyYAML==5.4.1
-redis==4.1.4
+redis==4.5.5
 requests==2.26.0
 requests-mock==1.9.3
 rfc3986==1.5.0
