@@ -144,13 +144,7 @@ async def all_institutions() -> Dict:
 async def all_institutions(db: Session = Depends(get_db)):
     institutions = LocalImpl(db).get_institutions()
 
-    filtered_institutions = []
-
-    for institution in institutions:
-        filtered_institution = {"id": institution.id, "name": institution.name}
-        filtered_institutions.append(filtered_institution)
-
-    return filtered_institutions
+    return [{"id": institution.id, "name": institution.name} for institution in institutions]
 
 
 # endregion
