@@ -597,6 +597,12 @@ class LocalImpl:
 
             new_person.is_deleted = None
 
+            address = f"{new_person.address_street} {new_person.address_number}, " \
+                      f"{new_person.locality}, {new_person.department}, Argentina"
+            lat, long = geolocator.get_lat_long_from_address(address)
+            new_person.lat = lat
+            new_person.long = long
+
             self.db.add(new_person)
             self.db.commit()
 
@@ -659,6 +665,12 @@ class LocalImpl:
 
             existing_person.is_deleted = None
 
+            address = f"{existing_person.address_street} {existing_person.address_number}, " \
+                      f"{existing_person.locality}, {existing_person.department}, Argentina"
+            lat, long = geolocator.get_lat_long_from_address(address)
+            existing_person.lat = lat
+            existing_person.long = long
+
             self.db.commit()
             return ResponseOK(
                 value=str(existing_person.id),
@@ -698,9 +710,6 @@ class LocalImpl:
         person_identification_number: Optional[str],
         is_by_id: bool,
     ):
-
-        existing_person = None
-
         try:
 
             if is_by_id:
@@ -809,6 +818,9 @@ class LocalImpl:
         s_person.email = m_person.email
         s_person.is_deleted = m_person.is_deleted
 
+        s_person.lat = model_person.lat
+        s_person.long = model_person.long
+
         return s_person
 
     def set_admin_status_to_person(self, person_id: int, admin_status_id: int):
@@ -846,6 +858,11 @@ class LocalImpl:
         if user is not None:
             return ResponseNOK(message="Username already exists.", code=417)
         try:
+            address = f"{person_user.address_street} {person_user.address_number}, " \
+                      f"{person_user.locality}, {person_user.department}, Argentina"
+            lat, long = geolocator.get_lat_long_from_address(address)
+            person_user.lat = lat
+            person_user.long = long
             new_person = model_person(
                 None,
                 person_user.surname,
@@ -873,6 +890,8 @@ class LocalImpl:
                 person_user.locality,
                 person_user.email,
                 person_user.id_person_status,
+                lat=person_user.lat,
+                long=person_user.long
             )
 
             new_person.is_deleted = None

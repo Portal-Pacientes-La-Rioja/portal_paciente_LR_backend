@@ -1,12 +1,11 @@
 import bcrypt
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Float
 from datetime import datetime
 
 from app.config.database import Base
 
 
 class Person(Base):
-
     __tablename__ = "person"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -39,6 +38,8 @@ class Person(Base):
     identification_front_image_file_type = Column(String(45), nullable=True)
     identification_back_image_file_type = Column(String(45), nullable=True)
     id_person_status = Column(Integer, nullable=False)
+    lat = Column(Float, nullable=True)
+    long = Column(Float, nullable=True)
 
     def __init__(
         self, id: int, surname: str, name: str, identification_number: str, birthdate: datetime, id_gender: int,
