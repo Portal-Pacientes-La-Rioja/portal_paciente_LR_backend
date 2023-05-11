@@ -18,8 +18,7 @@ geo = Nominatim(user_agent="portal-paciente-lr")
 
 for address in addresses:
     person_id = address[0]
-    address_parts = [address[1], address[2], address[3], address[4]]
-    direction = ", ".join(filter(None, address_parts))
+    direction = f"{address[1]} {address[2]}, {address[3]}, {address[4]}"
     location = geo.geocode(direction)
     if location is not None:
         lat = location.latitude
