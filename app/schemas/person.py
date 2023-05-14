@@ -49,6 +49,8 @@ class Person(BaseModel):
     services: Optional[str]
     specialties: Optional[str]
     activate: Optional[int]
+    lat: Optional[float]
+    long: Optional[float]
 
     @validator("birthdate", pre=True)
     def parse_birthdate(cls, value):
@@ -122,6 +124,8 @@ class CreatePersonResponse(BaseModel):
     locality: Optional[str]
     email: Optional[str]
     id_person_status: Optional[int]
+    lat: Optional[float]
+    long: Optional[float]
 
     class Config:
         orm_mode = True
@@ -154,6 +158,8 @@ class Person2(BaseModel):
     locality: Optional[str]
     email: Optional[str]
     id_person_status: Optional[int]
+    lat: Optional[float]
+    long: Optional[float]
 
 
 class PersonFamily(BaseModel):
@@ -183,6 +189,8 @@ class PersonFamily(BaseModel):
     locality: Optional[str]
     email: Optional[str]
     id_person_status: Optional[int]
+    lat: Optional[float]
+    long: Optional[float]
     family_group: List[Person2]
 
 
@@ -191,6 +199,7 @@ class PersonLogged(BaseModel):
     access_token: str
     token_type: str
     data: PersonFamily
+
 
 class Institution(BaseModel):
     id: Optional[int]

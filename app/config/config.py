@@ -26,7 +26,11 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 # region Whitelisted Paths
 
 WHITE_LIST_PATH = (
+    LR_BASE_API + "/get_all_provincias",
+    LR_BASE_API + "/get_all_departamentos_from",
+    LR_BASE_API + "/get_all_localidades_from",
     LR_BASE_API + "/institutions/all",
+    LR_BASE_API + "/institutions/allWithNewData",
     LR_BASE_API + "/parametric/identificationtypes",
     LR_BASE_API + "/recover-password",
     LR_BASE_API + "/change-password",
@@ -96,3 +100,12 @@ RECOVERY_PASSWORD_URL = f"{SERVER_IP}{RECOVERY_ENDPOINT}"
 TEMPLATE_FOLDER_RECOVERY_PASSWORD = os.getenv("TEMPLATE_FOLDER_RECOVERY_PASSWORD", "/code/app/templates/")
 
 # endregion
+
+# DATOS GOB AR
+API_DATOS_GOB_AR = os.getenv("API_DATOS_GOB_AR", "https://apis.datos.gob.ar/georef/api/")
+API_DATOS_GOB_AR_PROVINCIAS = API_DATOS_GOB_AR + "provincias"
+API_DATOS_GOB_AR_DEPARTAMENTOS = API_DATOS_GOB_AR + "departamentos"
+API_DATOS_GOB_AR_LOCALIDADES = API_DATOS_GOB_AR + "localidades"
+
+# region google maps
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")

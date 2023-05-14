@@ -474,7 +474,8 @@ class LocalImpl:
                 dependencia=institution.dependencia,
                 departamento=institution.departamento,
                 localidad=institution.localidad,
-                ciudad=institution.ciudad
+                ciudad=institution.ciudad,
+                telefono=institution.telefono
             )
 
             services = self.db.query(model_services).filter(model_services.id.in_(institution.services)).all()
@@ -486,7 +487,8 @@ class LocalImpl:
                 .all())
             new_inst.especialidades = especialidades
 
-            lat, long = geolocator.get_lat_long_from_address(institution.domicilio)
+            domicilio = f"{institution.domicilio}, {institution.localidad}, {institution.departamento}, Argentina"
+            lat, long = geolocator.get_lat_long_from_address(domicilio)
             new_inst.lat = lat
             new_inst.long = long
 
@@ -496,7 +498,7 @@ class LocalImpl:
             self.db.rollback()
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="Institution not created.", code=417)
-        return ResponseOK(message="Institution created successfully.", code=201)
+        return ResponseOK(message="Institution created successfully.", code=201, value=str(new_inst.id))
     
     def get_institutions(self) -> Union[List[Dict], ResponseNOK]:
         try:
@@ -534,30 +536,36 @@ class LocalImpl:
     def update_institution(self, institution: schemas_institution):
         buff_institution = (
             self.db.query(model_institution)
-            .where(model_institution.name == institution.name)
+            .where(model_institution.id == institution.id)
             .first()
         )
         if buff_institution is None:
             return ResponseNOK(value="", message="Institution does not exists.", code=417)
 
         try:
+            # TODO: FIx this duplicated. https://github.com/Portal-Pacientes-La-Rioja/portal_paciente_LR_backend/issues/86
             existing_institution = (  # type: model_institution
                 self.db.query(model_institution)
-                .where(model_institution.name == institution.name)
+                .where(model_institution.id == institution.id)
                 .first()
             )
 
             existing_institution.name = institution.name
             existing_institution.codigo = institution.codigo
             existing_institution.domicilio = institution.domicilio
-            existing_institution.lat = institution.lat
-            existing_institution.long = institution.long
             existing_institution.tipologia = institution.tipologia
             existing_institution.categoria_tipologia = institution.categoria_tipologia
-            existing_institution.dependecia = institution.dependencia
-            existing_institution.departmento = institution.departamento
+            existing_institution.dependencia = institution.dependencia
+            existing_institution.departamento = institution.departamento
             existing_institution.localidad = institution.localidad
             existing_institution.ciudad = institution.ciudad
+            existing_institution.telefono = institution.telefono
+
+            # geolocalization
+            domicilio = f"{institution.domicilio}, {institution.localidad}, {institution.departamento}, Argentina"
+            lat, long = geolocator.get_lat_long_from_address(domicilio)
+            existing_institution.lat = lat
+            existing_institution.long = long
 
             services = self.db.query(model_services).filter(model_services.id.in_(institution.services)).all()
             existing_institution.services = services
@@ -588,6 +596,12 @@ class LocalImpl:
             new_person = model_person(**person.dict())
 
             new_person.is_deleted = None
+
+            address = f"{new_person.address_street} {new_person.address_number}, " \
+                      f"{new_person.locality}, {new_person.department}, Argentina"
+            lat, long = geolocator.get_lat_long_from_address(address)
+            new_person.lat = lat
+            new_person.long = long
 
             self.db.add(new_person)
             self.db.commit()
@@ -651,6 +665,12 @@ class LocalImpl:
 
             existing_person.is_deleted = None
 
+            address = f"{existing_person.address_street} {existing_person.address_number}, " \
+                      f"{existing_person.locality}, {existing_person.department}, Argentina"
+            lat, long = geolocator.get_lat_long_from_address(address)
+            existing_person.lat = lat
+            existing_person.long = long
+
             self.db.commit()
             return ResponseOK(
                 value=str(existing_person.id),
@@ -690,9 +710,6 @@ class LocalImpl:
         person_identification_number: Optional[str],
         is_by_id: bool,
     ):
-
-        existing_person = None
-
         try:
 
             if is_by_id:
@@ -801,6 +818,9 @@ class LocalImpl:
         s_person.email = m_person.email
         s_person.is_deleted = m_person.is_deleted
 
+        s_person.lat = model_person.lat
+        s_person.long = model_person.long
+
         return s_person
 
     def set_admin_status_to_person(self, person_id: int, admin_status_id: int):
@@ -838,6 +858,11 @@ class LocalImpl:
         if user is not None:
             return ResponseNOK(message="Username already exists.", code=417)
         try:
+            address = f"{person_user.address_street} {person_user.address_number}, " \
+                      f"{person_user.locality}, {person_user.department}, Argentina"
+            lat, long = geolocator.get_lat_long_from_address(address)
+            person_user.lat = lat
+            person_user.long = long
             new_person = model_person(
                 None,
                 person_user.surname,
@@ -865,6 +890,8 @@ class LocalImpl:
                 person_user.locality,
                 person_user.email,
                 person_user.id_person_status,
+                lat=person_user.lat,
+                long=person_user.long
             )
 
             new_person.is_deleted = None

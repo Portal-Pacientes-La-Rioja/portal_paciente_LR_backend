@@ -22,6 +22,7 @@ class Institutions(Base):
     localidad = Column(String(100), nullable=False)
     ciudad = Column(String(100), nullable=False)
     activate = Column(Integer, default=1)
+    telefono = Column(Integer, default=0)
 
     services = relationship("Services", secondary="institutions_services", back_populates="institutions")
     especialidades = relationship("Especialidades",
