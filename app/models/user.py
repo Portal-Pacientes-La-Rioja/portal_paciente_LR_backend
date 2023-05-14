@@ -34,6 +34,10 @@ class User(Base):
     def admin(self) -> bool:
         return bool(self.is_admin)
 
+    @property
+    def super_admin(self) -> bool:
+        return bool(self.is_superadmin)
+
     def __init__(
         self, username: str, password: str, id_person: int, id_user_status: int,
         is_admin: bool = False
