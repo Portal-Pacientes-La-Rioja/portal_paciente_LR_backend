@@ -16,7 +16,7 @@ ADMIN_ROUTES = ['create_message', 'update_message', 'delete_message', 'send_mess
                 'Deny access to a Person', 'Accept a Person', 'List of id_admin_status Person',
                 'List of id_admin_status Person', 'List of persons']
 
-SUPERADMIN_ROUTES = ['Create an user admin']
+SUPERADMIN_ROUTES = ['Create an user admin', "create_admin"]
 
 
 class Permission(Base):
@@ -65,6 +65,7 @@ class Permission(Base):
 
         name = ''
 
+        # TODO: Check how this work.
         for route in routes:
             match, scope = route.matches(request)
             if match == Match.FULL:

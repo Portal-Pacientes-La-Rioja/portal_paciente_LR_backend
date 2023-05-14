@@ -9,9 +9,5 @@ class User(BaseModel):
     id_person: Optional[int]
     id_user_status: Optional[int]
 
-
-class UserAdmin(BaseModel):
-    username: str
-    password: str
-    id_person = None  # Do send nothing
-    id_user_status = None  # Do send nothing
+class UserAdmin(User):
+    pass
