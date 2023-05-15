@@ -10,7 +10,8 @@ from app.gear.local.admin import (
     list_of_persons_to_accept,
     list_of_persons_accepted,
     list_of_persons_in_general,
-    create_user_admin
+    create_user_admin,
+    assign_institutions_to_admins
 )
 from app.main import get_db
 from app.routes.common import router_admin
@@ -60,3 +61,12 @@ async def persons(db: Session = Depends(get_db)):
                   )
 async def create_admin(user: UserAdmin, db: Session = Depends(get_db)):
     return create_user_admin(user, db)
+
+
+@router_admin.put("/assign_institutions",
+                   # name="Create an user admin",  # Check this, is not recognized by the method user_is_authorized2
+                   description="Assign institutions to Admins",
+                   response_model=Union[ResponseOK, ResponseNOK]
+                  )
+async def create_admin(username: str, institutions_ids: List[int], db: Session = Depends(get_db)):
+    return assign_institutions_to_admins(username, institutions_ids, db)

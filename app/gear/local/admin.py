@@ -1,4 +1,7 @@
+from typing import List
+
 from sqlalchemy.orm import Session
+from app.models.institutions import Institutions as model_institution
 
 from app.models.person import Person as model_person
 from app.models.user import User as model_user
@@ -7,7 +10,6 @@ from app.schemas.persons import PersonsReduced, PersonUsername
 from app.schemas.responses import ResponseNOK, ResponseOK
 from app.schemas.returned_object import ReturnMessage
 from app.schemas.user import UserAdmin
-
 
 
 def list_of_persons(only_accepted: bool, db: Session):
@@ -138,3 +140,21 @@ def create_user_admin(user: UserAdmin, db: Session):
         print(e)
         return ResponseNOK(message="User not created.", code=417)
     return ResponseOK(message="User created successfully.", code=201)
+
+
+def assign_institutions_to_admins(username: str, institutions_ids: List[int], db: Session):
+    try:
+        user = db.query(model_user).where(model_user.username == username).one()  # type: model_user
+        if not user.admin:
+            return ResponseNOK(message=f"Hey, {username} is not an Admin.", code=417)
+
+        institutions = db.query(model_institution).filter(model_institution.id.in_(institutions_ids)).all()
+        user.institutions = institutions
+        db.commit()
+
+    except Exception as err:
+        print(err)
+        db.rollback()
+        return ResponseNOK(message="Something wrong.", code=417)
+
+    return ResponseOK(message="The institutions was added successfully.", code=201)
