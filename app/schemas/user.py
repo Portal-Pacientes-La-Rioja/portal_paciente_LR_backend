@@ -8,3 +8,6 @@ class User(BaseModel):
     password: Optional[str]
     id_person: Optional[int]
     id_user_status: Optional[int]
+
+class UserAdmin(User):
+    pass

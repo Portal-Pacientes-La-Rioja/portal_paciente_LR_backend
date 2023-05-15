@@ -4,7 +4,10 @@ from app.models.person import Person as model_person
 from app.models.user import User as model_user
 from app.schemas.admin_status_enum import AdminStatusEnum
 from app.schemas.persons import PersonsReduced, PersonUsername
+from app.schemas.responses import ResponseNOK, ResponseOK
 from app.schemas.returned_object import ReturnMessage
+from app.schemas.user import UserAdmin
+
 
 
 def list_of_persons(only_accepted: bool, db: Session):
@@ -119,3 +122,19 @@ def remove_a_person(person_username: PersonUsername, db: Session):
 
     return ReturnMessage(message="Person updated successfully.", code=201)
 
+
+def create_user_admin(user: UserAdmin, db: Session):
+    try:
+        new_user = model_user(**user.dict())
+        # This method create only admin users
+        new_user.is_admin = 1
+
+        db.add(new_user)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        # TODO: Activate log
+        # log.log_error_message(e, __file__)
+        print(e)
+        return ResponseNOK(message="User not created.", code=417)
+    return ResponseOK(message="User created successfully.", code=201)

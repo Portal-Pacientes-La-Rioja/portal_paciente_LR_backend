@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
@@ -9,12 +9,15 @@ from app.gear.local.admin import (
     accept_a_person,
     list_of_persons_to_accept,
     list_of_persons_accepted,
-    list_of_persons_in_general
+    list_of_persons_in_general,
+    create_user_admin
 )
 from app.main import get_db
 from app.routes.common import router_admin
 from app.schemas.persons import PersonUsername, PersonsReduced
+from app.schemas.responses import ResponseOK, ResponseNOK
 from app.schemas.returned_object import ReturnMessage
+from app.schemas.user import UserAdmin
 
 
 @router_admin.delete("/person", name="Remove a Person",
@@ -49,3 +52,11 @@ async def persons_accepted(db: Session = Depends(get_db)):
 async def persons(db: Session = Depends(get_db)):
     return list_of_persons_in_general(db)
 
+# TODO add response model
+@router_admin.post("/create_admin",
+                   # name="Create an user admin",  # Check this, is not recognized by the method user_is_authorized2
+                   description="Create an user admin",
+                   response_model=Union[ResponseOK, ResponseNOK]
+                  )
+async def create_admin(user: UserAdmin, db: Session = Depends(get_db)):
+    return create_user_admin(user, db)

@@ -1,5 +1,6 @@
 import bcrypt
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 
 from app.config.database import Base
 
@@ -14,7 +15,12 @@ class User(Base):
     id_person = Column(Integer, nullable=True)
     id_user_status = Column(Integer, nullable=True)
     is_admin = Column(Integer, nullable=False, default=0)
+    is_superadmin = Column(Integer, nullable=False, default=0)
     is_mail_validate = Column(Integer, nullable=True, default=0)
+
+    institutions = relationship("Institutions",
+                                secondary="institutions_user",
+                                back_populates="user")
 
     @staticmethod
     def encrypt_pwd(password):
@@ -27,6 +33,10 @@ class User(Base):
     @property
     def admin(self) -> bool:
         return bool(self.is_admin)
+
+    @property
+    def super_admin(self) -> bool:
+        return bool(self.is_superadmin)
 
     def __init__(
         self, username: str, password: str, id_person: int, id_user_status: int,
