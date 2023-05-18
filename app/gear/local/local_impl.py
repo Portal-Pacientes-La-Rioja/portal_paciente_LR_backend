@@ -818,8 +818,8 @@ class LocalImpl:
         s_person.email = m_person.email
         s_person.is_deleted = m_person.is_deleted
 
-        s_person.lat = model_person.lat
-        s_person.long = model_person.long
+        s_person.lat = m_person.lat
+        s_person.long = m_person.long
 
         return s_person
 
