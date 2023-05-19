@@ -11,7 +11,10 @@ from app.gear.local.admin import (
     list_of_persons_accepted,
     list_of_persons_in_general,
     create_user_admin,
-    assign_institutions_to_admins
+    assign_institutions_to_admins,
+    list_of_admins,
+    get_admin_by_id,
+    on_off_admin
 )
 from app.main import get_db
 from app.routes.common import router_admin
@@ -49,13 +52,14 @@ async def persons_accepted(db: Session = Depends(get_db)):
     return list_of_persons_to_accept(db)
 
 
-@router_admin.get("/persons", name= "List of persons", response_model=List[PersonsReduced], description="List of all Persons in the system")
+@router_admin.get("/persons", name="List of persons", response_model=List[PersonsReduced], description="List of all Persons in the system")
 async def persons(db: Session = Depends(get_db)):
     return list_of_persons_in_general(db)
 
+
 # TODO add response model
 @router_admin.post("/create_admin",
-                   # name="Create an user admin",  # Check this, is not recognized by the method user_is_authorized2
+                   # name="Create a user admin",  # Check this, is not recognized by the method user_is_authorized2
                    description="Create an user admin",
                    response_model=Union[ResponseOK, ResponseNOK]
                   )
@@ -64,9 +68,36 @@ async def create_admin(user: UserAdmin, db: Session = Depends(get_db)):
 
 
 @router_admin.put("/assign_institutions",
-                   # name="Create an user admin",  # Check this, is not recognized by the method user_is_authorized2
+                   # name="Create a user admin",  # Check this, is not recognized by the method user_is_authorized2
                    description="Assign institutions to Admins",
                    response_model=Union[ResponseOK, ResponseNOK]
                   )
 async def create_admin(username: str, institutions_ids: List[int], db: Session = Depends(get_db)):
     return assign_institutions_to_admins(username, institutions_ids, db)
+
+
+@router_admin.get("/admins",
+                   # name="Create a user admin",  # Check this, is not recognized by the method user_is_authorized2
+                   description="List of Admins",
+                   response_model=Union[List[UserAdmin], ResponseNOK]
+                  )
+async def list_admins(db: Session = Depends(get_db)):
+    return list_of_admins(db)
+
+
+@router_admin.get("/adminbyid",
+                   # name="Create an user admin",  # Check this, is not recognized by the method user_is_authorized2
+                   description="Get Admin by id",
+                   response_model=Union[List[UserAdmin], ResponseNOK]
+                  )
+async def list_admin_id(user_id: int, db: Session = Depends(get_db)):
+    return get_admin_by_id(user_id, db)
+
+
+@router_admin.get("/onoffadmin",
+                   # name="Create an user admin",  # Check this, is not recognized by the method user_is_authorized2
+                   description="Activate/deactivate admin",
+                   response_model=Union[ResponseOK, ResponseNOK]
+                  )
+async def onoff_user_admin(user_id: int, db: Session = Depends(get_db)):
+    return on_off_admin(user_id, db)

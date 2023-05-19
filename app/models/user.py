@@ -17,6 +17,7 @@ class User(Base):
     is_admin = Column(Integer, nullable=False, default=0)
     is_superadmin = Column(Integer, nullable=False, default=0)
     is_mail_validate = Column(Integer, nullable=True, default=0)
+    is_admin_activate = Column(Integer, nullable=True, default=0)
 
     institutions = relationship("Institutions",
                                 secondary="institutions_user",
@@ -47,3 +48,4 @@ class User(Base):
         self.id_person = id_person
         self.id_user_status = id_user_status
         self.is_admin = is_admin
+        self.is_admin_activate = 1

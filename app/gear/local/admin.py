@@ -10,6 +10,7 @@ from app.schemas.persons import PersonsReduced, PersonUsername
 from app.schemas.responses import ResponseNOK, ResponseOK
 from app.schemas.returned_object import ReturnMessage
 from app.schemas.user import UserAdmin
+from app.schemas.user import UserAdmin
 
 
 def list_of_persons(only_accepted: bool, db: Session):
@@ -160,3 +161,43 @@ def assign_institutions_to_admins(username: str, institutions_ids: List[int], db
         return ResponseNOK(message="Something wrong.", code=417)
 
     return ResponseOK(message="The institutions was added successfully.", code=201)
+
+
+def list_of_admins(db: Session):
+    try:
+        users = db.query(model_user).where(model_user.is_admin == 1).all()
+    except Exception as err:
+        print(err)
+        db.rollback()
+        return ResponseNOK(message="Something wrong.", code=417)
+    return [UserAdmin.from_orm(user) for user in users]
+
+
+def get_admin_by_id(user_id: int, db: Session):
+    try:
+        users = db.query(model_user).where((model_user.id == user_id) & (model_user.is_admin == 1)).all()
+    except Exception as err:
+        print(err)
+        db.rollback()
+        return ResponseNOK(message="Something wrong.", code=417)
+    return [UserAdmin.from_orm(user) for user in users]
+
+
+def on_off_admin(user_id: int, db: Session):
+    try:
+        existing_admin = (
+            db.query(model_user)
+            .where((model_user.id == user_id) & (model_user.is_admin == 1))
+            .first()
+        )
+        if existing_admin.super_admin:
+            return ResponseNOK(message="What are you trying to do? ;-)", code=417)
+        # swap to 1 or 0 according its value
+        existing_admin.is_admin_activate = existing_admin.is_admin_activate ^ 1
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        # self.log.log_error_message(e, self.module)  TODO: fix this
+        return ResponseNOK(message="Admin does not updated.", code=417)
+
+    return ResponseOK(message="Updated successfully.", code=201)
