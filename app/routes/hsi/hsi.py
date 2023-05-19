@@ -139,14 +139,6 @@ async def all_institutions() -> Dict:
     hsi_impl = HSI_Impl()
     return hsi_impl.get_all_institutions()
 
-
-@router_hsi.get("/institutions/allWithNewData", tags=["Institutions"])
-async def all_institutions(db: Session = Depends(get_db)):
-    institutions = LocalImpl(db).get_institutions()
-
-    return [{"id": institution.id, "name": institution.name} for institution in institutions]
-
-
 # endregion
 
 # region Patient
