@@ -16,7 +16,7 @@ ADMIN_ROUTES = ['create_message', 'update_message', 'delete_message', 'send_mess
                 'Deny access to a Person', 'Accept a Person', 'List of id_admin_status Person',
                 'List of id_admin_status Person', 'List of persons']
 
-SUPERADMIN_ROUTES = ['Create an user admin', "create_admin", "assign_institutions"]
+SUPERADMIN_ROUTES = ['Create an user admin', "create_admin", "assign_institutions", "admins", "adminbyid"]
 
 
 class Permission(Base):
