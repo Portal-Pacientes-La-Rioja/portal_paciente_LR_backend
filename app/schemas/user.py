@@ -12,6 +12,7 @@ class User(BaseModel):
 
 class UserAdmin(User):
     id: Optional[int]
+    is_admin_activate: Optional[int]
     pass
 
     class Config:

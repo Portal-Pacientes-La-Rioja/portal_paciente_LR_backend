@@ -181,3 +181,23 @@ def get_admin_by_id(user_id: int, db: Session):
         db.rollback()
         return ResponseNOK(message="Something wrong.", code=417)
     return [UserAdmin.from_orm(user) for user in users]
+
+
+def on_off_admin(user_id: int, db: Session):
+    try:
+        existing_admin = (
+            db.query(model_user)
+            .where((model_user.id == user_id) & (model_user.is_admin == 1))
+            .first()
+        )
+        if existing_admin.super_admin:
+            return ResponseNOK(message="What are you trying to do? ;-)", code=417)
+        # swap to 1 or 0 according its value
+        existing_admin.is_admin_activate = existing_admin.is_admin_activate ^ 1
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        # self.log.log_error_message(e, self.module)  TODO: fix this
+        return ResponseNOK(message="Admin does not updated.", code=417)
+
+    return ResponseOK(message="Updated successfully.", code=201)
