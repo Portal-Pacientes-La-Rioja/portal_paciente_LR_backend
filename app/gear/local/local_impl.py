@@ -1,5 +1,6 @@
 import base64
 import uuid
+from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from typing import List, Dict
 from typing import Optional, Union
@@ -9,6 +10,7 @@ from fastapi.responses import Response
 from jose.exceptions import JWTError
 from sqlalchemy.exc import PendingRollbackError
 from sqlalchemy.orm import Session
+from unidecode import unidecode
 
 from app.config.config import (
     WHITE_LIST_PATH,
@@ -18,6 +20,8 @@ from app.config.config import (
     LOCAL_FILE_DOWNLOAD_DIRECTORY,
     VALIDATE_EMAIL_PATH,
 )
+from app.gear.geolocation import geolocator
+from app.gear.hsi.hsi_impl import HSI_Impl
 from app.gear.local.bearer_token import BearerToken
 from app.gear.log.main_logger import MainLogger, logging
 from app.gear.validation_mail.validation_mail import send_validation_mail
@@ -47,7 +51,6 @@ from app.schemas.person import (
 from app.schemas.person_user import PersonUser as schema_person_user
 from app.schemas.responses import ResponseNOK, ResponseOK
 from app.schemas.user import User as schema_user
-from app.gear.geolocation import geolocator
 
 
 class LocalImpl:
@@ -507,6 +510,68 @@ class LocalImpl:
         except Exception as e:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
+
+    def get_merge_institutions(self) -> Union[List[Dict], ResponseNOK]:
+        """
+        We need to have coordinated the institutions from HSI system and Portal. The
+        actual issue is that HSI is a live system and can change in the time adding
+        or removing institutions.
+
+        So, this method merge the two institutions lists. The data is saved in the portal
+        database, so to difference the id institutions from HSI will be saved multiplied
+        by 1000. In this way, Portal will know if an id is from HSI, and will get the data
+        from HSI or Portal. This transformation will only occur in the /createperson endpoint.
+
+        This method return a list of dictionaries with the form:
+
+        [
+            {
+              "id": "id",
+              "name": "name",
+              "portal": False,
+            },
+            {
+              "id": "id",
+              "name": "name",
+              "portal": True,
+            }
+            ...
+        ]
+        """
+        @dataclass
+        class MergedInstitutions:
+            id_inst: int
+            name: str
+            portal: bool = True
+
+        # Get institutions from HSI
+        hsi_impl = HSI_Impl()
+        hsi_institutions = hsi_impl.get_all_institutions()
+        try:
+            portal_institutions = [MergedInstitutions(id_inst=id_inst, name=name)
+                                   for id_inst, name
+                                   in self.db.query(model_institution.id, model_institution.name).all()]
+        except Exception as e:
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message=f"Error: {str(e)}", code=417)
+
+        # TODO: Esto es horrible, hay que cambiar:
+        to_add = []
+        for hsi_inst in hsi_institutions:
+            exists = False
+            for portal_inst in portal_institutions:
+                if unidecode(hsi_inst["name"]).upper() == unidecode(portal_inst.name).upper():
+                    portal_inst.id_inst = hsi_inst["id"]
+                    portal_inst.portal = False
+                    exists = True
+                    break
+            if not exists:
+                to_add.append(MergedInstitutions(id_inst=hsi_inst["id"], name=hsi_inst["name"], portal=False))
+
+        portal_institutions += to_add
+
+        return [asdict(inst) for inst in portal_institutions]
+
 
     def get_institutions_by_id(self, institutions_id: int):
         try:
