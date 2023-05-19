@@ -51,6 +51,7 @@ class Person(BaseModel):
     activate: Optional[int]
     lat: Optional[float]
     long: Optional[float]
+    inst_from_portal: Optional[bool]
 
     @validator("birthdate", pre=True)
     def parse_birthdate(cls, value):
@@ -91,6 +92,7 @@ class CreatePerson(BaseModel):
     locality: Optional[str]
     email: Optional[str]
     id_person_status: Optional[int]
+    inst_from_portal: Optional[bool]
 
     @validator("birthdate", pre=True)
     def parse_birthdate(cls, value):
@@ -126,6 +128,7 @@ class CreatePersonResponse(BaseModel):
     id_person_status: Optional[int]
     lat: Optional[float]
     long: Optional[float]
+    inst_from_portal: Optional[bool]
 
     class Config:
         orm_mode = True
@@ -160,6 +163,7 @@ class Person2(BaseModel):
     id_person_status: Optional[int]
     lat: Optional[float]
     long: Optional[float]
+    inst_from_portal: Optional[bool]
 
 
 class PersonFamily(BaseModel):
@@ -192,6 +196,7 @@ class PersonFamily(BaseModel):
     lat: Optional[float]
     long: Optional[float]
     family_group: List[Person2]
+    inst_from_portal: Optional[bool]
 
 
 class PersonLogged(BaseModel):

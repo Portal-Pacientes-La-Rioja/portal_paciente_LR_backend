@@ -671,8 +671,14 @@ class LocalImpl:
             self.db.add(new_person)
             self.db.commit()
 
+            person_add = (
+                self.db.query(model_person)
+                .where(model_person.identification_number == person.identification_number)
+                .first()
+            )
+
             return ResponseOK(
-                value=str(new_person.id),
+                value=str(person_add.id),
                 message="Person created successfully.",
                 code=201,
             )
@@ -886,6 +892,8 @@ class LocalImpl:
         s_person.lat = m_person.lat
         s_person.long = m_person.long
 
+        s_person.inst_from_portal = m_person.inst_from_portal
+
         return s_person
 
     def set_admin_status_to_person(self, person_id: int, admin_status_id: int):
@@ -955,6 +963,7 @@ class LocalImpl:
                 person_user.locality,
                 person_user.email,
                 person_user.id_person_status,
+                person_user.inst_from_portal,
                 lat=person_user.lat,
                 long=person_user.long
             )

@@ -35,7 +35,8 @@ def list_of_persons(only_accepted: bool, db: Session):
                       model_person.id_admin_status,
                       model_person.id_person_status,
                       model_person.id_usual_institution,
-                      model_user.username)\
+                      model_user.username,
+                      model_person.inst_from_portal)\
         .join(model_user, model_user.id_person == model_person.id) \
         .where(model_person.is_deleted == None) \
         .where(cond) \
@@ -50,7 +51,8 @@ def list_of_persons(only_accepted: bool, db: Session):
                                                 surname=p.surname,
                                                 id_admin_status=p.id_admin_status,
                                                 id_person_status=p.id_person_status,
-                                                id_usual_institution=p.id_usual_institution))
+                                                id_usual_institution=p.id_usual_institution,
+                                                inst_from_portal=p.inst_from_portal))
     return persons_to_return
 
 

@@ -38,6 +38,8 @@ class PersonUser(BaseModel):
     id_person: Optional[int]
     id_user_status: Optional[int]
 
+    inst_from_portal: Optional[bool] = True
+
     @validator("birthdate", pre=True)
     def parse_birthdate(cls, value):
         return datetime.strptime(
