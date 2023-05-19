@@ -741,6 +741,7 @@ class LocalImpl:
             lat, long = geolocator.get_lat_long_from_address(address)
             existing_person.lat = lat
             existing_person.long = long
+            existing_person.inst_from_portal = updated_person.inst_from_portal
 
             self.db.commit()
             return ResponseOK(
