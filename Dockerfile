@@ -3,9 +3,13 @@ FROM python:3.9
 
 WORKDIR /code
 
-COPY ./requirements.txt /code/requirements.txt
+COPY ./pyproject.toml /code/pyproject.toml
 
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN pip install --no-cache-dir poetry
+
+RUN poetry config virtualenvs.create false
+
+RUN poetry install --no-root --only main
 
 RUN pip install mysqlclient
 
