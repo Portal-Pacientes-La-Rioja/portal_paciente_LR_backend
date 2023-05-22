@@ -599,21 +599,15 @@ class LocalImpl:
         return ResponseOK(message="Updated successfully.", code=201)
     
     def update_institution(self, institution: schemas_institution):
-        buff_institution = (
+        existing_institution = (
             self.db.query(model_institution)
             .where(model_institution.id == institution.id)
             .first()
         )
-        if buff_institution is None:
+        if existing_institution is None:
             return ResponseNOK(value="", message="Institution does not exists.", code=417)
 
         try:
-            # TODO: FIx this duplicated. https://github.com/Portal-Pacientes-La-Rioja/portal_paciente_LR_backend/issues/86
-            existing_institution = (  # type: model_institution
-                self.db.query(model_institution)
-                .where(model_institution.id == institution.id)
-                .first()
-            )
 
             existing_institution.name = institution.name
             existing_institution.codigo = institution.codigo
