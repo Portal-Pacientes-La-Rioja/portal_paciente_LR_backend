@@ -5,13 +5,13 @@ WORKDIR /code
 
 COPY ./pyproject.toml /code/pyproject.toml
 
+COPY ./poetry.lock /code/poetry.lock
+
 RUN pip install --no-cache-dir poetry
 
 RUN poetry config virtualenvs.create false
 
 RUN poetry install --no-root --only main
-
-RUN pip install mysqlclient
 
 COPY ./app /code/app
 
