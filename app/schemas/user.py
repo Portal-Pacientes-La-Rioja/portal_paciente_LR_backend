@@ -1,4 +1,5 @@
-from typing import Optional, List
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -14,6 +15,14 @@ class UserAdmin(User):
     id: Optional[int]
     is_admin_activate: Optional[int]
     pass
+
+    class Config:
+        orm_mode = True
+
+
+class CreateUserAdmin(BaseModel):
+    username: Optional[str]
+    password: Optional[str]
 
     class Config:
         orm_mode = True
