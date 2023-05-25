@@ -17,7 +17,7 @@ ADMIN_ROUTES = ['create_message', 'update_message', 'delete_message', 'send_mess
                 'List of id_admin_status Person', 'List of persons']
 
 SUPERADMIN_ROUTES = ['Create an user admin', "create_admin", "assign_institutions", "admins", "adminbyid",
-                     "onoffadmin"]
+                     "onoffadmin", "change_password_admin"]
 
 
 class Permission(Base):

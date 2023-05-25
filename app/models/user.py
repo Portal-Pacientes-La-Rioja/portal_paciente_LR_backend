@@ -39,6 +39,9 @@ class User(Base):
     def super_admin(self) -> bool:
         return bool(self.is_superadmin)
 
+    def new_password(self, passwd: str) -> None:
+        self.password = self.encrypt_pwd(passwd)
+
     def __init__(
         self, username: str, password: str, id_person: int, id_user_status: int,
         is_admin: bool = False

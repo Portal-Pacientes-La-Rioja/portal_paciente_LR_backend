@@ -14,14 +14,15 @@ from app.gear.local.admin import (
     assign_institutions_to_admins,
     list_of_admins,
     get_admin_by_id,
-    on_off_admin
+    on_off_admin,
+    change_password,
 )
 from app.main import get_db
 from app.routes.common import router_admin
 from app.schemas.persons import PersonUsername, PersonsReduced
 from app.schemas.responses import ResponseOK, ResponseNOK
 from app.schemas.returned_object import ReturnMessage
-from app.schemas.user import UserAdmin
+from app.schemas.user import UserAdmin, CreateUserAdmin
 
 
 @router_admin.delete("/person", name="Remove a Person",
@@ -63,7 +64,7 @@ async def persons(db: Session = Depends(get_db)):
                    description="Create an user admin",
                    response_model=Union[ResponseOK, ResponseNOK]
                   )
-async def create_admin(user: UserAdmin, db: Session = Depends(get_db)):
+async def create_admin(user: CreateUserAdmin, db: Session = Depends(get_db)):
     return create_user_admin(user, db)
 
 
@@ -94,10 +95,19 @@ async def list_admin_id(user_id: int, db: Session = Depends(get_db)):
     return get_admin_by_id(user_id, db)
 
 
-@router_admin.get("/onoffadmin",
+@router_admin.put("/onoffadmin",
                    # name="Create an user admin",  # Check this, is not recognized by the method user_is_authorized2
                    description="Activate/deactivate admin",
                    response_model=Union[ResponseOK, ResponseNOK]
                   )
 async def onoff_user_admin(user_id: int, db: Session = Depends(get_db)):
     return on_off_admin(user_id, db)
+
+
+@router_admin.put("/change_password",
+                   # name="Create an user admin",  # Check this, is not recognized by the method user_is_authorized2
+                   description="change the password to an admin",
+                   response_model=Union[ResponseOK, ResponseNOK]
+                  )
+async def change_password_admin(admin: CreateUserAdmin,  db: Session = Depends(get_db)):
+    return change_password(admin, db)

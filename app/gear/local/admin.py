@@ -1,15 +1,15 @@
-from typing import List
+from typing import List, Union
 
 from sqlalchemy.orm import Session
-from app.models.institutions import Institutions as model_institution
 
+from app.models.institutions import Institutions as model_institution
 from app.models.person import Person as model_person
 from app.models.user import User as model_user
 from app.schemas.admin_status_enum import AdminStatusEnum
 from app.schemas.persons import PersonsReduced, PersonUsername
 from app.schemas.responses import ResponseNOK, ResponseOK
 from app.schemas.returned_object import ReturnMessage
-from app.schemas.user import UserAdmin
+from app.schemas.user import CreateUserAdmin
 from app.schemas.user import UserAdmin
 
 
@@ -128,9 +128,9 @@ def remove_a_person(person_username: PersonUsername, db: Session):
     return ReturnMessage(message="Person updated successfully.", code=201)
 
 
-def create_user_admin(user: UserAdmin, db: Session):
+def create_user_admin(user: CreateUserAdmin, db: Session):
     try:
-        new_user = model_user(**user.dict())
+        new_user = model_user(**user.dict(), id_person=0, id_user_status=0)
         # This method create only admin users
         new_user.is_admin = 1
 
@@ -201,3 +201,31 @@ def on_off_admin(user_id: int, db: Session):
         return ResponseNOK(message="Admin does not updated.", code=417)
 
     return ResponseOK(message="Updated successfully.", code=201)
+
+
+def change_password(admin: CreateUserAdmin, db: Session) -> Union[ResponseOK, ResponseNOK]:
+    try:
+        existing_admin = (
+            db.query(model_user)
+            .where((model_user.username == admin.username) & (model_user.is_admin == 1))
+            .first()
+        )
+        if existing_admin is None:
+            return ResponseOK(
+                message="Something Wrong.",
+                code=417,
+            )
+        existing_admin.new_password(admin.password)
+        db.commit()
+
+        return ResponseOK(
+            value=str(existing_admin.id),
+            message="Password changed successfully.",
+            code=201,
+        )
+
+    except Exception as e:
+        db.rollback()
+        # log.log_error_message(e, self.module)
+        print(e)  # TODO: fix logger
+        return ResponseNOK(message="Person cannot be updated.", code=417)
