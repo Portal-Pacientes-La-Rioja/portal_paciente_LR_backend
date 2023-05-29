@@ -1,10 +1,16 @@
+from typing import List, Union
+
 from sqlalchemy.orm import Session
 
+from app.models.institutions import Institutions as model_institution
 from app.models.person import Person as model_person
 from app.models.user import User as model_user
 from app.schemas.admin_status_enum import AdminStatusEnum
 from app.schemas.persons import PersonsReduced, PersonUsername
+from app.schemas.responses import ResponseNOK, ResponseOK
 from app.schemas.returned_object import ReturnMessage
+from app.schemas.user import CreateUserAdmin
+from app.schemas.user import UserAdmin
 
 
 def list_of_persons(only_accepted: bool, db: Session):
@@ -30,7 +36,8 @@ def list_of_persons(only_accepted: bool, db: Session):
                       model_person.id_admin_status,
                       model_person.id_person_status,
                       model_person.id_usual_institution,
-                      model_user.username)\
+                      model_user.username,
+                      model_person.inst_from_portal)\
         .join(model_user, model_user.id_person == model_person.id) \
         .where(model_person.is_deleted == None) \
         .where(cond) \
@@ -45,7 +52,8 @@ def list_of_persons(only_accepted: bool, db: Session):
                                                 surname=p.surname,
                                                 id_admin_status=p.id_admin_status,
                                                 id_person_status=p.id_person_status,
-                                                id_usual_institution=p.id_usual_institution))
+                                                id_usual_institution=p.id_usual_institution,
+                                                inst_from_portal=p.inst_from_portal))
     return persons_to_return
 
 
@@ -119,3 +127,105 @@ def remove_a_person(person_username: PersonUsername, db: Session):
 
     return ReturnMessage(message="Person updated successfully.", code=201)
 
+
+def create_user_admin(user: CreateUserAdmin, db: Session):
+    try:
+        new_user = model_user(**user.dict(), id_person=0, id_user_status=0)
+        # This method create only admin users
+        new_user.is_admin = 1
+
+        db.add(new_user)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        # TODO: Activate log
+        # log.log_error_message(e, __file__)
+        print(e)
+        return ResponseNOK(message="User not created.", code=417)
+    return ResponseOK(message="User created successfully.", code=201)
+
+
+def assign_institutions_to_admins(username: str, institutions_ids: List[int], db: Session):
+    try:
+        user = db.query(model_user).where(model_user.username == username).one()  # type: model_user
+        if not user.admin:
+            return ResponseNOK(message=f"Hey, {username} is not an Admin.", code=417)
+
+        institutions = db.query(model_institution).filter(model_institution.id.in_(institutions_ids)).all()
+        user.institutions = institutions
+        db.commit()
+
+    except Exception as err:
+        print(err)
+        db.rollback()
+        return ResponseNOK(message="Something wrong.", code=417)
+
+    return ResponseOK(message="The institutions was added successfully.", code=201)
+
+
+def list_of_admins(db: Session):
+    try:
+        users = db.query(model_user).where(model_user.is_admin == 1).all()
+    except Exception as err:
+        print(err)
+        db.rollback()
+        return ResponseNOK(message="Something wrong.", code=417)
+    return [UserAdmin.from_orm(user) for user in users]
+
+
+def get_admin_by_id(user_id: int, db: Session):
+    try:
+        users = db.query(model_user).where((model_user.id == user_id) & (model_user.is_admin == 1)).all()
+    except Exception as err:
+        print(err)
+        db.rollback()
+        return ResponseNOK(message="Something wrong.", code=417)
+    return [UserAdmin.from_orm(user) for user in users]
+
+
+def on_off_admin(user_id: int, db: Session):
+    try:
+        existing_admin = (
+            db.query(model_user)
+            .where((model_user.id == user_id) & (model_user.is_admin == 1))
+            .first()
+        )
+        if existing_admin.super_admin:
+            return ResponseNOK(message="What are you trying to do? ;-)", code=417)
+        # swap to 1 or 0 according its value
+        existing_admin.is_admin_activate = existing_admin.is_admin_activate ^ 1
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        # self.log.log_error_message(e, self.module)  TODO: fix this
+        return ResponseNOK(message="Admin does not updated.", code=417)
+
+    return ResponseOK(message="Updated successfully.", code=201)
+
+
+def change_password(admin: CreateUserAdmin, db: Session) -> Union[ResponseOK, ResponseNOK]:
+    try:
+        existing_admin = (
+            db.query(model_user)
+            .where((model_user.username == admin.username) & (model_user.is_admin == 1))
+            .first()
+        )
+        if existing_admin is None:
+            return ResponseOK(
+                message="Something Wrong.",
+                code=417,
+            )
+        existing_admin.new_password(admin.password)
+        db.commit()
+
+        return ResponseOK(
+            value=str(existing_admin.id),
+            message="Password changed successfully.",
+            code=201,
+        )
+
+    except Exception as e:
+        db.rollback()
+        # log.log_error_message(e, self.module)
+        print(e)  # TODO: fix logger
+        return ResponseNOK(message="Person cannot be updated.", code=417)

@@ -59,3 +59,11 @@ async def get_institution(db: Session = Depends(get_db)):
 )
 async def create_institution(institution: schemas_institution, db: Session = Depends(get_db)):
     return LocalImpl(db).create_institution(institution)
+
+
+@router_institutions.get("/allWithNewData", tags=["Institutions"])
+async def all_institutions(db: Session = Depends(get_db)):
+    institutions = LocalImpl(db).get_merge_institutions()
+
+    return [{"id": institution["id_inst"], "name": institution["name"], "portal": institution["portal"]}
+            for institution in institutions]

@@ -10,6 +10,7 @@ class PersonsReduced(BaseModel):
     id_admin_status: int
     id_person_status: int
     id_usual_institution: Optional[int]
+    inst_from_portal: bool
 
 
 class Person(BaseModel):

@@ -40,6 +40,7 @@ class Person(Base):
     id_person_status = Column(Integer, nullable=False)
     lat = Column(Float, nullable=True)
     long = Column(Float, nullable=True)
+    inst_from_portal = Column(Boolean, nullable=True)
 
     def __init__(
         self, id: int, surname: str, name: str, identification_number: str, birthdate: datetime, id_gender: int,
@@ -47,7 +48,8 @@ class Person(Base):
             is_diabetic: bool, is_hypertensive: bool, is_chronic_respiratory_disease: bool,
             is_chronic_kidney_disease: bool, identification_number_master: str, id_identification_type: int,
             id_identification_type_master: int, is_deleted: bool, id_patient: int, id_admin_status: int,
-            phone_number: str, department: str, locality: str, email: str, id_person_status: int, *args, **kargs):
+            phone_number: str, department: str, locality: str, email: str, id_person_status: int,
+            inst_from_portal: bool, *args, **kargs):
         self.id = id
         self.surname = surname
         self.name = name
@@ -74,3 +76,4 @@ class Person(Base):
         self.locality = locality
         self.email = email
         self.id_person_status = id_person_status
+        self.inst_from_portal = inst_from_portal
