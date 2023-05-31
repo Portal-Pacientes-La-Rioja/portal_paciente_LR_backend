@@ -1,5 +1,8 @@
-from typing import Optional, List
+from typing import Optional, List, Union
 from pydantic import BaseModel
+from .institutions import Institution
+
+
 
 
 class User(BaseModel):
@@ -10,10 +13,10 @@ class User(BaseModel):
     id_user_status: Optional[int]
 
 
+
 class UserAdmin(User):
     id: Optional[int]
     is_admin_activate: Optional[int]
-    pass
-
+    institutions:  Optional[list]
     class Config:
         orm_mode = True
