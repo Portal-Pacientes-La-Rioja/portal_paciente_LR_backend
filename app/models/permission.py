@@ -11,13 +11,12 @@ from app.models.role_permission import RolePermission
 from app.models.user import User
 from app.models.user_role import UserRole
 
-ADMIN_ROUTES = ['create_message', 'update_message', 'delete_message', 'send_message',
-                'set_admin_status_to_person', 'get_admin_status', 'Remove a Person',
-                'Deny access to a Person', 'Accept a Person', 'List of id_admin_status Person',
-                'List of id_admin_status Person', 'List of persons',"adminbyid","assign_institutions",
-                'Create an user admin', "create_admin", "admins","adminbyid","onoffadmin"]
+ADMIN_ROUTES = ['adminbyid']
 
-SUPERADMIN_ROUTES = ['Create an user admin', "create_admin", "assign_institutions", "admins","onoffadmin"]
+SUPERADMIN_ROUTES = ['Create an user admin', "create_admin", "assign_institutions", "admins","onoffadmin",
+                    'create_message', 'update_message', 'delete_message', 'send_message',
+                    'set_admin_status_to_person', 'get_admin_status', 'Remove a Person',
+                    'Deny access to a Person', 'Accept a Person','List of id_admin_status Person', 'List of persons',"adminbyid",]
 
 
 class Permission(Base):

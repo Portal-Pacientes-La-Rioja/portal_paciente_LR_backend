@@ -41,7 +41,7 @@ class User(Base):
 
     def __init__(
         self, username: str, password: str, id_person: int, id_user_status: int,
-        is_admin: int, institutions: list[institutions]
+        is_admin: int, institutions: institutions
     ):
         self.username = username
         self.password = self.encrypt_pwd(password)
@@ -49,4 +49,4 @@ class User(Base):
         self.id_user_status = id_user_status
         self.is_admin = is_admin
         self.is_admin_activate = 1
-        self.institutions = [inst.id for inst in institutions]
+        self.institutions: institutions[list[int]]
