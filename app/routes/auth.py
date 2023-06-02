@@ -18,7 +18,9 @@ def login_for_access_token(
     db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
 ):
     username = form_data.username
-    userid = get_user(username)
+    useradmin = get_user(username)
+    is_admin = useradmin.is_admin
+    is_superadmin = useradmin.is_superadmin
     user = authenticate_user_and_is_admin(db, username, form_data.password)
     if not user:
         raise HTTPException(
@@ -32,7 +34,8 @@ def login_for_access_token(
     )
     return {"access_token": access_token, 
             "token_type": "Bearer",
-            "id": userid.id
+            "is_admin": is_admin,
+            "is_superadmin": is_superadmin,
         }
     
 
