@@ -14,10 +14,7 @@ from app.models.user_role import UserRole
 
 # TODO: Merge these.
 
-ADMIN_ROUTES = ['create_message', 'update_message', 'delete_message', 'send_message',
-                'set_admin_status_to_person', 'get_admin_status', 'Remove a Person',
-                'Deny access to a Person', 'Accept a Person', 'List of id_admin_status Person',
-                'List of id_admin_status Person', 'List of persons']
+ADMIN_ROUTES = ["adminbyid"]
 
 SUPERADMIN_ROUTES = ['create_message', 'update_message', 'delete_message', 'send_message',
                 'set_admin_status_to_person', 'get_admin_status', 'Remove a Person',
