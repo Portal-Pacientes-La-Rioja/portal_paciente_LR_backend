@@ -27,9 +27,12 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    if userid.is_superadmin == 1:
+        is_superadmin = True
     access_token = create_access_token(
-        data={"sub": username}, expires_delta=access_token_expires
+        data={"sub": username, "is_superadmin": is_superadmin}, expires_delta=access_token_expires
     )
+    print("access: ",access_token)
     return {"access_token": access_token, 
             "token_type": "Bearer",
             "id": userid.id
