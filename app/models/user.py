@@ -1,7 +1,7 @@
 import bcrypt
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-
+from typing import List
 from app.config.database import Base
 
 
@@ -44,7 +44,7 @@ class User(Base):
 
     def __init__(
         self, username: str, password: str, id_person: int, id_user_status: int,
-        is_admin: bool = False
+        is_admin: int, institutions: institutions
     ):
         self.username = username
         self.password = self.encrypt_pwd(password)
@@ -52,3 +52,4 @@ class User(Base):
         self.id_user_status = id_user_status
         self.is_admin = is_admin
         self.is_admin_activate = 1
+        self.institutions: institutions[List[int]]
