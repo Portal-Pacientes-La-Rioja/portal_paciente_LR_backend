@@ -12,8 +12,6 @@ from app.models.user import User
 from app.models.user_role import UserRole
 
 
-# TODO: Merge these.
-
 ADMIN_ROUTES = ["adminbyid"]
 
 SUPERADMIN_ROUTES = ['create_message', 'update_message', 'delete_message', 'send_message',
