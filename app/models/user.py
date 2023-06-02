@@ -1,7 +1,7 @@
 import bcrypt
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from typing import List, Union, Dict, Any
+from typing import List
 from app.config.database import Base
 
 
@@ -49,4 +49,4 @@ class User(Base):
         self.id_user_status = id_user_status
         self.is_admin = is_admin
         self.is_admin_activate = 1
-        self.institutions: institutions[list[int]]
+        self.institutions: institutions[List[int]]
