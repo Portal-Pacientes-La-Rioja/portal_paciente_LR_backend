@@ -8,6 +8,7 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from app.config.config import SECRET_KEY, ALGORITHM
+from app.gear.geolocation.route_calculation import ShortestRoute
 from app.gear.local.local_impl import LocalImpl
 from app.gear.log.main_logger import MainLogger, logging
 from app.gear.recover_password.recover_password import (
@@ -421,3 +422,9 @@ async def get_servicios(db: Session = Depends(get_db)):
 async def get_servicios_by_id_service(id_services: int, db: Session = Depends(get_db)):
     servicio = await LocalImpl(db).get_services(id_services)
     return servicio if servicio else {}
+
+
+@router_local.get("/shortest-route", tags=["Shortest Route"])
+async def calculate_shortest_route(person_id: int, institution_id: int, db: Session = Depends(get_db)):
+    route_calculator = ShortestRoute(db).calculate_shortest_route(person_id, institution_id)
+    return route_calculator
