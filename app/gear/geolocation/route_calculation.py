@@ -1,3 +1,6 @@
+import googlemaps
+from app.config.config import GOOGLE_MAPS_API_KEY
+
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import PendingRollbackError
 
@@ -13,6 +16,27 @@ class ShortestRoute:
 
     def __init__(self, db: Session):
         self.db = db
+
+    def calculate_shortest_route(self, person_id: int, institution_id: int):
+        gmaps = googlemaps.Client(key=f"{GOOGLE_MAPS_API_KEY}")
+
+        directions_result = gmaps.directions(
+            self.get_person_location(person_id), self.get_institution_location(institution_id), mode="driving"
+        )
+
+        if len(directions_result) > 0:
+            shortest_route = directions_result[0]
+
+            waypoints = []
+            for step in shortest_route["legs"][0]["steps"]:
+                spot = step["start_location"]
+                waypoints.append((spot["lat"], spot["lng"]))
+            final_spot = shortest_route["legs"][0]["end_location"]
+            waypoints.append((final_spot["lat"], final_spot["lng"]))
+
+            return waypoints
+        else:
+            return None
 
     def get_person_location(self, person_id: int):
         try:
