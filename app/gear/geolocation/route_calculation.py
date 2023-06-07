@@ -50,10 +50,10 @@ class ShortestRoute:
         except PendingRollbackError as e:
             self.log.log_error_message(str(e) + " [" + str(person_id) + "]", self.module)
             self.db.rollback()
-            return None
+            return None, None
         except Exception as e:
             self.log.log_error_message(e, self.module)
-            return None
+            return None, None
 
     def get_institution_location(self, institution_id: int):
         try:
@@ -69,7 +69,7 @@ class ShortestRoute:
         except PendingRollbackError as e:
             self.log.log_error_message(str(e) + " [" + str(institution_id) + "]", self.module)
             self.db.rollback()
-            return None
+            return None, None
         except Exception as e:
             self.log.log_error_message(e, self.module)
-            return None
+            return None, None
