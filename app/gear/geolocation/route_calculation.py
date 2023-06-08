@@ -17,8 +17,10 @@ class ShortestRoute:
     def __init__(self, db: Session):
         self.db = db
 
-    def calculate_shortest_route(self, person_id: int, institution_id: int):
+    def calculate_shortest_route(self, person_id: int):
         gmaps = googlemaps.Client(key=f"{GOOGLE_MAPS_API_KEY}")
+
+        institution_id = self.get_institution_id(person_id)
 
         directions_result = gmaps.directions(
             self.get_person_location(person_id), self.get_institution_location(institution_id), mode="driving"
@@ -73,3 +75,20 @@ class ShortestRoute:
         except Exception as e:
             self.log.log_error_message(e, self.module)
             return None, None
+
+    def get_institution_id(self, person_id: int):
+        try:
+            person = (
+                self.db.query(model_person.id_usual_institution).filter(model_person.id == person_id).first()
+            )
+            if person:
+                return person.id_usual_institution
+            else:
+                return None
+        except PendingRollbackError as e:
+            self.log.log_error_message(str(e) + " [" + str(person_id) + "]", self.module)
+            self.db.rollback()
+            return None
+        except Exception as e:
+            self.log.log_error_message(e, self.module)
+            return None
