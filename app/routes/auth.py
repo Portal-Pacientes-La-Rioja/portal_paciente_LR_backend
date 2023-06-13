@@ -19,6 +19,7 @@ def login_for_access_token(
 ):
     username = form_data.username
     userid = get_user(username)
+    id=userid.id
     user = authenticate_user_and_is_admin(db, username, form_data.password)
     if not user:
         raise HTTPException(
@@ -30,12 +31,10 @@ def login_for_access_token(
     if userid.is_superadmin == 1:
         is_superadmin = True
     access_token = create_access_token(
-        data={"sub": username, "is_superadmin": is_superadmin}, expires_delta=access_token_expires
-    )
-    print("access: ",access_token)
+        data={"sub": username, "is_superadmin": is_superadmin, "id": id}, expires_delta=access_token_expires
+    )       
     return {"access_token": access_token, 
-            "token_type": "Bearer",
-            "id": userid.id
+            "token_type": "Bearer"
         }
     
 

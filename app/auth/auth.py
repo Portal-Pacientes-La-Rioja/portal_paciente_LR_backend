@@ -81,11 +81,12 @@ async def get_current_user(db: Session, token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
+        id: int = payload.get("id")
         if username is None:
             log.log_error_message("Non specified user.", module)
             raise credentials_exception
         is_superadmin: bool =  payload.get("is_superadmin")
-        token_data = TokenData(username=username, is_superadmin=is_superadmin)
+        token_data = TokenData(username=username, is_superadmin=is_superadmin, id=id)
     except JWTError as e:
         log.log_error_message(str(e) + " [" + str(token_data.username) + "]", module)
         raise credentials_exception
