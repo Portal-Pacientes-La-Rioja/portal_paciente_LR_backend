@@ -19,7 +19,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 log = MainLogger()
 module = logging.getLogger(__name__)
 
-
 # TODO: get_user no debería estar en auth.py, debería estar
 #  en algún lado más general.
 def get_user(username: str) -> Optional[User]:
@@ -37,7 +36,10 @@ def get_user(username: str) -> Optional[User]:
     #        return user
     # return None
     user = LocalImpl(db).get_user_by_username(username=username)
-    return user
+    if user is not None:
+        return user
+    return None
+    
 
 
 def authenticate_user(db: Session, username: str, password: str) -> bool:
@@ -79,10 +81,12 @@ async def get_current_user(db: Session, token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
+        id: int = payload.get("id")
         if username is None:
             log.log_error_message("Non specified user.", module)
             raise credentials_exception
-        token_data = TokenData(username=username)
+        is_superadmin: bool =  payload.get("is_superadmin")
+        token_data = TokenData(username=username, is_superadmin=is_superadmin, id=id)
     except JWTError as e:
         log.log_error_message(str(e) + " [" + str(token_data.username) + "]", module)
         raise credentials_exception
