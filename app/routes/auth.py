@@ -19,8 +19,9 @@ def login_for_access_token(
 ):
     username = form_data.username
     useradmin = get_user(username)
-    is_admin = useradmin.is_admin
     is_superadmin = useradmin.is_superadmin
+    id_admin = useradmin.id
+
     user = authenticate_user_and_is_admin(db, username, form_data.password)
     if not user:
         raise HTTPException(
@@ -29,15 +30,15 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
     access_token = create_access_token(
-        data={"sub": username}, expires_delta=access_token_expires
+        data={"sub": username, "is_superadmin": is_superadmin, "id": id_admin}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, 
-            "token_type": "Bearer",
-            "is_admin": is_admin,
-            "is_superadmin": is_superadmin,
+    return {
+        "access_token": access_token,
+        "token_type": "Bearer"
         }
-    
+
 
 def login_person(
     db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()

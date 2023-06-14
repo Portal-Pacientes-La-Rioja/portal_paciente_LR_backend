@@ -19,7 +19,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 log = MainLogger()
 module = logging.getLogger(__name__)
 
-
 # TODO: get_user no debería estar en auth.py, debería estar
 #  en algún lado más general.
 def get_user(username: str) -> Optional[User]:
