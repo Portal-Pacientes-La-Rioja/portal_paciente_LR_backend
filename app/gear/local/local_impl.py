@@ -478,7 +478,8 @@ class LocalImpl:
                 departamento=institution.departamento,
                 localidad=institution.localidad,
                 ciudad=institution.ciudad,
-                telefono=institution.telefono
+                telefono=institution.telefono,
+                email=institution.email,
             )
 
             services = self.db.query(model_services).filter(model_services.id.in_(institution.services)).all()
@@ -619,6 +620,7 @@ class LocalImpl:
             existing_institution.localidad = institution.localidad
             existing_institution.ciudad = institution.ciudad
             existing_institution.telefono = institution.telefono
+            existing_institution.email = institution.email
 
             # geolocalization
             domicilio = f"{institution.domicilio}, {institution.localidad}, {institution.departamento}, Argentina"
