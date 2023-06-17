@@ -425,9 +425,9 @@ async def get_servicios_by_id_service(id_services: int, db: Session = Depends(ge
 
 
 @router_local.get("/shortest-route", tags=["Shortest Route"])
-async def calculate_shortest_route(person_id: int, db: Session = Depends(get_db)):
+async def calculate_shortest_route(person_id: int, institution_id: int, db: Session = Depends(get_db)):
     try:
-        route_calculator = ShortestRoute(db).calculate_shortest_route(person_id)
+        route_calculator = ShortestRoute(db).calculate_shortest_route(person_id, institution_id)
         return {"polygon": route_calculator}
     except ErrorDirecctionCalculation:
         return {"error": "Some error occurred. Directions can not be calculated"}

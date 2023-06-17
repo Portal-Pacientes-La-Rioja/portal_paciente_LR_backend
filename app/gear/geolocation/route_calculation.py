@@ -22,10 +22,10 @@ class ShortestRoute:
     def __init__(self, db: Session):
         self.db = db
 
-    def calculate_shortest_route(self, person_id: int):
+    def calculate_shortest_route(self, person_id: int, institution_id: int):
         gmaps = googlemaps.Client(key=f"{GOOGLE_MAPS_API_KEY}")
 
-        person_location, institution_location = self.get_start_end_point(person_id)
+        person_location, institution_location = self.get_start_end_point(person_id, institution_id)
 
         try:
             directions_result = gmaps.directions(person_location, institution_location)  # mode=driving by default.
@@ -38,10 +38,10 @@ class ShortestRoute:
         else:
             raise ErrorDirecctionCalculation
 
-    def get_start_end_point(self, person_id: int) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+    def get_start_end_point(self, person_id: int, institution_id: int) -> Tuple[Tuple[float, float], Tuple[float, float]]:
         try:
             person_location = self.get_person_location(person_id)
-            institution_location = self.get_institution_location(self.get_institution_id(person_id))
+            institution_location = self.get_institution_location(institution_id)
         except PendingRollbackError as e:
             self.log.log_error_message(str(e) + " [" + str(person_id) + "]", self.module)
             self.db.rollback()
@@ -64,9 +64,3 @@ class ShortestRoute:
                 .first()
         )
         return institution.lat, institution.long
-
-    def get_institution_id(self, person_id: int):
-        person = (
-            self.db.query(model_person.id_usual_institution).filter(model_person.id == person_id).first()
-        )
-        return person.id_usual_institution
