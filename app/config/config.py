@@ -109,3 +109,4 @@ API_DATOS_GOB_AR_LOCALIDADES = API_DATOS_GOB_AR + "localidades"
 
 # region google maps
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+# endregion
