@@ -7,7 +7,7 @@ from app.gear.sumar.database import engine
 from app.gear.sumar.sql_sumar import SQL_SUMAR
 
 
-@dataclass(order=True, frozen=False)
+@dataclass(order=True, frozen=True)
 class Result:
     id_afiliado: int
     nombre: str
@@ -47,8 +47,8 @@ class SumarImpl:
         return result
 
     def get_ceb_value(self, dni_afiliado: str) -> bool:
-        sentence = "SELECT smiafiliados.ceb FROM nacer.smiafiliados WHERE smiafiliados.afidni = '{}'".format(dni_afiliado)
+        sentence = f"SELECT smiafiliados.ceb FROM nacer.smiafiliados WHERE smiafiliados.afidni = '{dni_afiliado}'"
         with self.engine.connect() as conn:
-            exec_result = conn.execute(sentence)
-            ceb_value = exec_result.scalar()
+            row = conn.execute(sentence).fetchone()
+            ceb_value = row[0]
         return ceb_value == "S"
