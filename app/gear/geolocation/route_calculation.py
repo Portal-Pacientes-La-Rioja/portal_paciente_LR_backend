@@ -1,4 +1,6 @@
 import googlemaps
+import polyline
+
 from app.config.config import GOOGLE_MAPS_API_KEY
 from typing import Tuple
 
@@ -34,7 +36,8 @@ class ShortestRoute:
             raise ErrorDirecctionCalculation
 
         if directions_result:
-            return directions_result[0]["overview_polyline"]["points"]
+            polygon = directions_result[0]["overview_polyline"]["points"]
+            return polyline.decode(polygon)
         else:
             raise ErrorDirecctionCalculation
 
