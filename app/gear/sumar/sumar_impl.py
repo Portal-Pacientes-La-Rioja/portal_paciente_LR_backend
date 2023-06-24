@@ -49,5 +49,5 @@ class SumarImpl:
     def get_ceb_value(self, dni_afiliado: str) -> bool:
         sentence = f"SELECT smiafiliados.ceb FROM nacer.smiafiliados WHERE smiafiliados.afidni = '{dni_afiliado}'"
         with self.engine.connect() as conn:
-            row = conn.execute(sentence).fetchone()
+            row = conn.execute(sentence).scalar()
         return row == "S"
