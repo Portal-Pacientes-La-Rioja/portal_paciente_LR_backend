@@ -50,5 +50,5 @@ class SumarImpl:
         sentence = f"SELECT smiafiliados.ceb FROM nacer.smiafiliados WHERE smiafiliados.afidni = '{dni_afiliado}'"
         with self.engine.connect() as conn:
             row = conn.execute(sentence).fetchone()
-            ceb_value = row[0]
+            ceb_value = row
         return ceb_value == "S"
