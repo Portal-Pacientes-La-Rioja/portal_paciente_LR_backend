@@ -7,7 +7,9 @@ from sqlalchemy.orm import Session
 from app.gear.studies.config import UPLOAD_DIR
 
 from app.models.person import Person as model_person
-from app.schemas.responses import ResponseNOK
+from app.schemas.responses import ResponseNOK, ResponseOK
+
+ALLOWED_EXTENSIONS = ['pdf', 'jpeg', 'jpg', 'png']
 
 
 class StudiesController:
@@ -15,12 +17,18 @@ class StudiesController:
         self.db = db
 
     async def upload_study(self, person_id: int, study: UploadFile = File(...)):
+        # Validating if the person exists
         existing_person = (
             self.db.query(model_person).where(model_person.id == person_id).first()
         )
 
         if existing_person is None:
             return ResponseNOK(message=f"Non existent person_id: {str(person_id)}", code=417)
+
+        # Validating the file type
+        file_extension = study.filename.split('.')[-1].lower()
+        if file_extension not in ALLOWED_EXTENSIONS:
+            return ResponseNOK(message="Invalid file type", code=400)
 
         try:
             person_dir = os.path.join(UPLOAD_DIR, str(person_id))
@@ -30,7 +38,7 @@ class StudiesController:
             with open(file_path, "wb") as file:
                 file.write(await study.read())
 
-            return JSONResponse({"message": "Estudio cargado exitosamente"})
+            return ResponseOK(message="Study loaded successfully", code=201)
 
         except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
+            return ResponseNOK(message=f"Error: {str(e)}", code=500)
