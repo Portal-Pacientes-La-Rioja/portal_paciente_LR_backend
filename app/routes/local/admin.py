@@ -1,5 +1,4 @@
 from typing import List, Union
-
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
@@ -23,6 +22,7 @@ from app.schemas.persons import PersonUsername, PersonsReduced
 from app.schemas.responses import ResponseOK, ResponseNOK
 from app.schemas.returned_object import ReturnMessage
 from app.schemas.user import UserAdmin, CreateUserAdmin
+from app.auth.auth import get_current_user
 
 
 @router_admin.delete("/person", name="Remove a Person",
@@ -54,9 +54,8 @@ async def persons_accepted(db: Session = Depends(get_db)):
 
 
 @router_admin.get("/persons", name="List of persons", response_model=List[PersonsReduced], description="List of all Persons in the system")
-async def persons(db: Session = Depends(get_db)):
-    return list_of_persons_in_general(db)
-
+async def persons(db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+    return list_of_persons_in_general(db, current_user)
 
 # TODO add response model
 @router_admin.post("/create_admin",

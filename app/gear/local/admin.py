@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional
 
 from sqlalchemy.orm import Session
 
@@ -13,11 +13,24 @@ from app.schemas.user import CreateUserAdmin
 from app.schemas.user import UserAdmin
 
 
-def list_of_persons(only_accepted: bool, db: Session):
+def list_of_persons(only_accepted: bool, db: Session, username: Optional[str] = None):
     """
     Return list of persons, only name surname and if is accepted or
     not in the system.
     """
+    admin_user: model_user = db.query(model_user).where(model_user.username==username).first()
+
+    if not admin_user.is_admin:
+        return []
+
+    # A superadmin can query users from all institutions
+    if admin_user.is_superadmin:
+        cond_institution = True
+    else:
+        cond_institution =  model_person.id_usual_institution.in_([
+            inst.id for inst in admin_user.institutions
+        ]) if admin_user.institutions else True
+
 
     if only_accepted is None:
         cond = True
@@ -41,6 +54,7 @@ def list_of_persons(only_accepted: bool, db: Session):
         .join(model_user, model_user.id_person == model_person.id) \
         .where(model_person.is_deleted == None) \
         .where(cond) \
+        .where(cond_institution) \
         .all()
 
     persons_to_return = []
@@ -69,11 +83,11 @@ def list_of_persons_to_accept(db: Session):
     return list_of_persons(False, db)
 
 
-def list_of_persons_in_general(db: Session):
+def list_of_persons_in_general(db: Session, username: Optional[str] = None):
     """
     Return list of persons, without considering status.
     """
-    return list_of_persons(None, db)
+    return list_of_persons(None, db, username)
 
 
 def accept_a_person(person_username: PersonUsername, db: Session):

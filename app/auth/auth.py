@@ -69,7 +69,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 
-async def get_current_user(db: Session, token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -81,12 +81,6 @@ async def get_current_user(db: Session, token: str = Depends(oauth2_scheme)):
         if username is None:
             log.log_error_message("Non specified user.", module)
             raise credentials_exception
-        token_data = TokenData(username=username)
+        return username
     except JWTError as e:
-        log.log_error_message(str(e) + " [" + str(token_data.username) + "]", module)
         raise credentials_exception
-    user = get_user(db, username=token_data.username)
-    if user is None:
-        log.log_error_message("Non existent user " + str(token_data.username), module)
-        raise credentials_exception
-    return user
