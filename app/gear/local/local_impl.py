@@ -54,7 +54,6 @@ from app.schemas.user import User as schema_user
 
 
 class LocalImpl:
-
     log = MainLogger()
     module = logging.getLogger(__name__)
 
@@ -62,7 +61,6 @@ class LocalImpl:
         self.db = db
 
     async def filter_request_for_authorization(self, request: Request, call_next):
-
         if DEBUG_ENABLED:
             print(vars(request))
 
@@ -77,19 +75,19 @@ class LocalImpl:
                     "Access-Control-Allow-Methods": "POST, GET, OPTIONS, DELETE, PUT",
                     "Access-Control-Max-Age": "86400",
                     "Access-Control-Allow-Headers": "*",
-                    "Content-type": "*"
-                }
+                    "Content-type": "*",
+                },
             )
 
-        if AUTHORIZATION_ENABLED and (request.scope["path"] not in WHITE_LIST_PATH and
-                                      VALIDATE_EMAIL_PATH not in request.scope["path"]):
-
+        if AUTHORIZATION_ENABLED and (
+            request.scope["path"] not in WHITE_LIST_PATH
+            and VALIDATE_EMAIL_PATH not in request.scope["path"]
+        ):
             auth_token = request.headers.get("Authorization")
             bearer_token = BearerToken(auth_token)
 
             # Verificación de existencia del token y de que sea válido...
             if auth_token is None or self.is_token_expired(bearer_token):
-
                 if bearer_token.payload is not None:
                     self.log.log_error_message(
                         "Non valid token, expired or not provided for "
@@ -249,7 +247,9 @@ class LocalImpl:
             username = payload.get("sub")
 
             # check if the user is in DB
-            user = self.db.query(model_user).where(model_user.username == username).first()
+            user = (
+                self.db.query(model_user).where(model_user.username == username).first()
+            )
             if user is None:
                 return False
 
@@ -261,7 +261,6 @@ class LocalImpl:
 
     def create_message(self, header: str, body: str, is_formatted: bool):
         try:
-
             new_message = model_message()
 
             new_message.header = header
@@ -321,13 +320,37 @@ class LocalImpl:
         return ResponseOK(message="Message deleted successfully.", code=200)
 
     def send_message(
-        self, message_id: int, category_id: int, is_for_all_categories: bool
+        self,
+        message_id: int,
+        category_id: int,
+        is_for_all_categories: bool,
+        username: Optional[str] = None,
     ):
+        admin_user: model_user = (
+            self.db.query(model_user).where(model_user.username == username).first()
+        )
+
+        if not admin_user.is_admin:
+            return ResponseNOK(
+                message="Message relation not created. Unauthorized", code=417
+            )
+
+        # A superadmin can send a message to all institutions
+        if admin_user.is_superadmin:
+            cond_institution = True
+        else:
+            cond_institution = (
+                model_person.id_usual_institution.in_(
+                    [inst.id for inst in admin_user.institutions]
+                )
+                if admin_user.institutions
+                else True
+            )
         try:
             create_relation = False
             receipt_found = False
 
-            existing_persons = self.db.query(model_person).all()
+            existing_persons = self.db.query(model_person).where(cond_institution).all()
             for p in existing_persons:
                 if is_for_all_categories:
                     receipt_found = True
@@ -360,7 +383,6 @@ class LocalImpl:
                                     receipt_found = True
                                     create_relation = True
                 if create_relation:
-
                     new_person_message = model_person_message()
                     new_person_message.id_person = p.id
                     new_person_message.id_message = message_id
@@ -371,7 +393,6 @@ class LocalImpl:
                 create_relation = False
 
             if receipt_found:
-
                 message = (
                     self.db.query(model_message)
                     .where(model_message.id == message_id)
@@ -441,7 +462,6 @@ class LocalImpl:
 
     def set_message_read(self, person_id: int, message_id: int):
         try:
-
             person_message = (
                 self.db.query(model_person_message)
                 .where(model_person_message.id_person == person_id)
@@ -458,15 +478,19 @@ class LocalImpl:
             self.db.rollback()
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
-        
-    def create_institution(self, institution: schemas_institution) -> Union[ResponseOK, ResponseNOK]:
+
+    def create_institution(
+        self, institution: schemas_institution
+    ) -> Union[ResponseOK, ResponseNOK]:
         buff_institution = (
             self.db.query(model_institution)
             .where(model_institution.name == institution.name)
             .first()
         )
         if buff_institution is not None:
-            return ResponseNOK(value="", message="Institution already exists.", code=417)
+            return ResponseNOK(
+                value="", message="Institution already exists.", code=417
+            )
         try:
             new_inst = model_institution(
                 name=institution.name,
@@ -482,13 +506,18 @@ class LocalImpl:
                 email=institution.email,
             )
 
-            services = self.db.query(model_services).filter(model_services.id.in_(institution.services)).all()
+            services = (
+                self.db.query(model_services)
+                .filter(model_services.id.in_(institution.services))
+                .all()
+            )
             new_inst.services = services
 
             especialidades = (
                 self.db.query(model_especialidades)
                 .filter(model_especialidades.id.in_(institution.especialidades))
-                .all())
+                .all()
+            )
             new_inst.especialidades = especialidades
 
             domicilio = f"{institution.domicilio}, {institution.localidad}, {institution.departamento}, Argentina"
@@ -502,8 +531,12 @@ class LocalImpl:
             self.db.rollback()
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="Institution not created.", code=417)
-        return ResponseOK(message="Institution created successfully.", code=201, value=str(new_inst.id))
-    
+        return ResponseOK(
+            message="Institution created successfully.",
+            code=201,
+            value=str(new_inst.id),
+        )
+
     def get_institutions(self) -> Union[List[Dict], ResponseNOK]:
         try:
             institution_list = self.db.query(model_institution).all()
@@ -539,6 +572,7 @@ class LocalImpl:
             ...
         ]
         """
+
         @dataclass
         class MergedInstitutions:
             id_inst: int
@@ -549,9 +583,12 @@ class LocalImpl:
         hsi_impl = HSI_Impl()
         hsi_institutions = hsi_impl.get_all_institutions()
         try:
-            portal_institutions = [MergedInstitutions(id_inst=id_inst, name=name)
-                                   for id_inst, name
-                                   in self.db.query(model_institution.id, model_institution.name).all()]
+            portal_institutions = [
+                MergedInstitutions(id_inst=id_inst, name=name)
+                for id_inst, name in self.db.query(
+                    model_institution.id, model_institution.name
+                ).all()
+            ]
         except Exception as e:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
@@ -561,27 +598,37 @@ class LocalImpl:
         for hsi_inst in hsi_institutions:
             exists = False
             for portal_inst in portal_institutions:
-                if unidecode(hsi_inst["name"]).upper() == unidecode(portal_inst.name).upper():
+                if (
+                    unidecode(hsi_inst["name"]).upper()
+                    == unidecode(portal_inst.name).upper()
+                ):
                     portal_inst.id_inst = hsi_inst["id"]
                     portal_inst.portal = False
                     exists = True
                     break
             if not exists:
-                to_add.append(MergedInstitutions(id_inst=hsi_inst["id"], name=hsi_inst["name"], portal=False))
+                to_add.append(
+                    MergedInstitutions(
+                        id_inst=hsi_inst["id"], name=hsi_inst["name"], portal=False
+                    )
+                )
 
         portal_institutions += to_add
 
         return [asdict(inst) for inst in portal_institutions]
 
-
     def get_institutions_by_id(self, institutions_id: int):
         try:
-            value = self.db.query(model_institution).where(model_institution.id == institutions_id).first()
+            value = (
+                self.db.query(model_institution)
+                .where(model_institution.id == institutions_id)
+                .first()
+            )
         except Exception as e:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="Institution cannot be retrieved.", code=202)
         return value
-    
+
     def on_off_institution(self, institution: schemas_institution):
         try:
             existing_institution = (
@@ -598,7 +645,7 @@ class LocalImpl:
             return ResponseNOK(message="Institution does not updated.", code=417)
 
         return ResponseOK(message="Updated successfully.", code=201)
-    
+
     def update_institution(self, institution: schemas_institution):
         existing_institution = (
             self.db.query(model_institution)
@@ -606,10 +653,11 @@ class LocalImpl:
             .first()
         )
         if existing_institution is None:
-            return ResponseNOK(value="", message="Institution does not exists.", code=417)
+            return ResponseNOK(
+                value="", message="Institution does not exists.", code=417
+            )
 
         try:
-
             existing_institution.name = institution.name
             existing_institution.codigo = institution.codigo
             existing_institution.domicilio = institution.domicilio
@@ -628,13 +676,18 @@ class LocalImpl:
             existing_institution.lat = lat
             existing_institution.long = long
 
-            services = self.db.query(model_services).filter(model_services.id.in_(institution.services)).all()
+            services = (
+                self.db.query(model_services)
+                .filter(model_services.id.in_(institution.services))
+                .all()
+            )
             existing_institution.services = services
 
             especialidades = (
                 self.db.query(model_especialidades)
                 .filter(model_especialidades.id.in_(institution.especialidades))
-                .all())
+                .all()
+            )
             existing_institution.especialidades = especialidades
 
             self.db.commit()
@@ -658,8 +711,10 @@ class LocalImpl:
 
             new_person.is_deleted = None
 
-            address = f"{new_person.address_street} {new_person.address_number}, " \
-                      f"{new_person.locality}, {new_person.department}, Argentina"
+            address = (
+                f"{new_person.address_street} {new_person.address_number}, "
+                f"{new_person.locality}, {new_person.department}, Argentina"
+            )
             lat, long = geolocator.get_lat_long_from_address(address)
             new_person.lat = lat
             new_person.long = long
@@ -669,7 +724,9 @@ class LocalImpl:
 
             person_add = (
                 self.db.query(model_person)
-                .where(model_person.identification_number == person.identification_number)
+                .where(
+                    model_person.identification_number == person.identification_number
+                )
                 .first()
             )
 
@@ -732,8 +789,10 @@ class LocalImpl:
 
             existing_person.is_deleted = None
 
-            address = f"{existing_person.address_street} {existing_person.address_number}, " \
-                      f"{existing_person.locality}, {existing_person.department}, Argentina"
+            address = (
+                f"{existing_person.address_street} {existing_person.address_number}, "
+                f"{existing_person.locality}, {existing_person.department}, Argentina"
+            )
             lat, long = geolocator.get_lat_long_from_address(address)
             existing_person.lat = lat
             existing_person.long = long
@@ -779,7 +838,6 @@ class LocalImpl:
         is_by_id: bool,
     ):
         try:
-
             if is_by_id:
                 existing_person = (
                     self.db.query(model_person)
@@ -817,7 +875,6 @@ class LocalImpl:
     def get_family_group_by_identification_number_master(
         self, identification_number_master: str
     ):
-
         s_family_group = []
 
         family_group = (
@@ -928,8 +985,10 @@ class LocalImpl:
         if user is not None:
             return ResponseNOK(message="Username already exists.", code=417)
         try:
-            address = f"{person_user.address_street} {person_user.address_number}, " \
-                      f"{person_user.locality}, {person_user.department}, Argentina"
+            address = (
+                f"{person_user.address_street} {person_user.address_number}, "
+                f"{person_user.locality}, {person_user.department}, Argentina"
+            )
             lat, long = geolocator.get_lat_long_from_address(address)
             person_user.lat = lat
             person_user.long = long
@@ -962,7 +1021,7 @@ class LocalImpl:
                 person_user.id_person_status,
                 person_user.inst_from_portal,
                 lat=person_user.lat,
-                long=person_user.long
+                long=person_user.long,
             )
 
             new_person.is_deleted = None
@@ -1119,7 +1178,6 @@ class LocalImpl:
 
     def download_identification_image(self, person_id: str, is_front: bool):
         try:
-
             file_name = None
             existing_person = (
                 self.db.query(model_person).where(model_person.id == person_id).first()
@@ -1184,14 +1242,22 @@ class LocalImpl:
             code=201,
         )
 
-    async def get_especialidades(self, codigo: Optional[int] = None)\
-            -> Union[List[model_especialidades], model_especialidades]:
+    async def get_especialidades(
+        self, codigo: Optional[int] = None
+    ) -> Union[List[model_especialidades], model_especialidades]:
         if codigo is None:
             return self.db.query(model_especialidades).all()
-        return self.db.query(model_especialidades).where(model_especialidades.codigo == codigo).first()
+        return (
+            self.db.query(model_especialidades)
+            .where(model_especialidades.codigo == codigo)
+            .first()
+        )
 
-    async def get_services(self, id_service: Optional[int] = None)\
-            -> Union[List[model_services], model_services]:
+    async def get_services(
+        self, id_service: Optional[int] = None
+    ) -> Union[List[model_services], model_services]:
         if id_service is None:
             return self.db.query(model_services).all()
-        return self.db.query(model_services).where(model_services.id == id_service).first()
+        return (
+            self.db.query(model_services).where(model_services.id == id_service).first()
+        )
