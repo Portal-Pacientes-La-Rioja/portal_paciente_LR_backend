@@ -23,7 +23,7 @@ from app.schemas.returned_object import ReturnMessage
 from app.schemas.user import CreateUserAdmin, UserAdmin
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from fastapi_pagination import Page
+# from fastapi_pagination import Page
 
 
 @router_admin.delete(
