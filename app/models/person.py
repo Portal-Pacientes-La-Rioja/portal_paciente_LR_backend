@@ -1,5 +1,6 @@
 import bcrypt
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Float
+from sqlalchemy.orm import relationship
 from datetime import datetime
 
 from app.config.database import Base
@@ -41,6 +42,8 @@ class Person(Base):
     lat = Column(Float, nullable=True)
     long = Column(Float, nullable=True)
     inst_from_portal = Column(Boolean, nullable=True)
+
+    studies = relationship("Studies", back_populates="person")
 
     def __init__(
         self, id: int, surname: str, name: str, identification_number: str, birthdate: datetime, id_gender: int,
