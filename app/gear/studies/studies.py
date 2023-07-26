@@ -8,6 +8,8 @@ from app.gear.studies.config import UPLOAD_DIR
 from app.models.person import Person as model_person
 from app.schemas.responses import ResponseNOK, ResponseOK
 
+ALLOWED_EXTENSIONS = ['pdf', 'jpeg', 'jpg', 'png']
+
 
 class StudiesController:
     def __init__(self, db: Session):
@@ -21,6 +23,11 @@ class StudiesController:
 
         if existing_person is None:
             return ResponseNOK(message=f"Non existent person_id: {str(person_id)}", code=417)
+
+        # Validating the file type
+        file_extension = study.filename.split('.')[-1].lower()
+        if file_extension not in ALLOWED_EXTENSIONS:
+            return ResponseNOK(message="Invalid file type", code=400)
 
         try:
             os.makedirs(UPLOAD_DIR, exist_ok=True)
