@@ -18,8 +18,31 @@ from app.models.user_category import UserCategory
 from app.models.user_front_end import UserFrontEnd
 from app.models.user_role import UserRole
 from app.models.institutions_admin import InstitutionsAdmin
+from app.models.study import Studies
+from app.models.study_type import StudyType
 
-__all__ = ["AdminStatus", "Category", "ExpirationBlackList", "Gender", "Message", "Permission",
-           "Person", "PersonMessage", "PersonStatus", "Role", "RolePermission", "User", "UserCategory",
-           "UserFrontEnd", "UserRole", "Institutions", "services", "InstitutionsServices", "Especialidades",
-           "InstitutionsEspecialidades", "InstitutionsAdmin"]
+__all__ = [
+    "AdminStatus",
+    "Category",
+    "ExpirationBlackList",
+    "Gender",
+    "Message",
+    "Permission",
+    "Person",
+    "PersonMessage",
+    "PersonStatus",
+    "Role",
+    "RolePermission",
+    "User",
+    "UserCategory",
+    "UserFrontEnd",
+    "UserRole",
+    "Institutions",
+    "services",
+    "InstitutionsServices",
+    "Especialidades",
+    "InstitutionsEspecialidades",
+    "InstitutionsAdmin",
+    "Studies",
+    "StudyType",
+]
