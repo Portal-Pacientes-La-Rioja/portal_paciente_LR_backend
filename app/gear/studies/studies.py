@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.gear.studies.config import UPLOAD_DIR
 
 from app.models.person import Person as model_person
+from app.models.study import Studies as model_studies
 from app.schemas.responses import ResponseNOK, ResponseOK
 
 ALLOWED_EXTENSIONS = ['pdf', 'jpeg', 'jpg', 'png']
@@ -16,7 +17,7 @@ class StudiesController:
     def __init__(self, db: Session):
         self.db = db
 
-    async def upload_study(self, person_id: int, study: UploadFile = File(...)):
+    async def upload_study(self, person_id: int, description: str, study: UploadFile = File(...)):
         # Validating if the person exists
         existing_person = (
             self.db.query(model_person).where(model_person.id == person_id).first()
@@ -40,8 +41,20 @@ class StudiesController:
             with open(file_path, "rb") as bin_file:
                 b64_string_file = base64.b64encode(bin_file.read())
 
+            new_study = model_studies(
+                id_person=person_id,
+                id_study_type=1,
+                study_name=study.filename,
+                description=description,
+                file_path=b64_string_file,
+            )
+
+            self.db.add(new_study)
+            self.db.commit()
+
             return ResponseOK(message="Study loaded successfully", code=201)
 
         except Exception as e:
+            self.db.rollback()
             return ResponseNOK(message=f"Error: {str(e)}", code=500)
 
