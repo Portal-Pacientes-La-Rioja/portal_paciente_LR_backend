@@ -31,6 +31,16 @@ class StudiesController:
         if file_extension not in ALLOWED_EXTENSIONS:
             return ResponseNOK(message="Invalid file type", code=400)
 
+        # Validating duplicates
+        existing_study = (
+            self.db.query(model_studies)
+            .where(model_studies.id_person == person_id)
+            .where(model_studies.study_name == study.filename)
+            .first()
+        )
+        if existing_study:
+            return ResponseNOK(message="Duplicated file for this person", code=409)
+
         try:
             os.makedirs(UPLOAD_DIR, exist_ok=True)
 
