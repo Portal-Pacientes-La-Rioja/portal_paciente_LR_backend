@@ -1,3 +1,4 @@
+import base64
 import os
 
 from fastapi import File, UploadFile
@@ -33,8 +34,11 @@ class StudiesController:
             os.makedirs(UPLOAD_DIR, exist_ok=True)
 
             file_path = os.path.join(UPLOAD_DIR, study.filename)
-            with open(file_path, "wb") as file:
-                file.write(await study.read())
+            file_content = open(file_path, "wb+")
+            file_content.write(await study.read())
+            file_content.close()
+            with open(file_path, "rb") as bin_file:
+                b64_string_file = base64.b64encode(bin_file.read())
 
             return ResponseOK(message="Study loaded successfully", code=201)
 
