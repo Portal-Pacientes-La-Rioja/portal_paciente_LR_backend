@@ -8,6 +8,8 @@ from app.models.institutions_especialidades import InstitutionsEspecialidades
 from app.models.institutions_services import InstitutionsServices
 from app.models.message import Message
 from app.models.permission import Permission
+from app.models.study import Studies
+from app.models.study_type import StudyType
 from app.models.person import Person
 from app.models.person_message import PersonMessage
 from app.models.person_status import PersonStatus
@@ -19,7 +21,7 @@ from app.models.user_front_end import UserFrontEnd
 from app.models.user_role import UserRole
 from app.models.institutions_admin import InstitutionsAdmin
 
-__all__ = ["AdminStatus", "Category", "ExpirationBlackList", "Gender", "Message", "Permission",
+__all__ = ["AdminStatus", "Category", "ExpirationBlackList", "Gender", "Message", "Permission", "Studies", "StudyType",
            "Person", "PersonMessage", "PersonStatus", "Role", "RolePermission", "User", "UserCategory",
            "UserFrontEnd", "UserRole", "Institutions", "services", "InstitutionsServices", "Especialidades",
            "InstitutionsEspecialidades", "InstitutionsAdmin"]

@@ -43,6 +43,8 @@ class Person(Base):
     long = Column(Float, nullable=True)
     inst_from_portal = Column(Boolean, nullable=True)
 
+    studies = relationship("Studies", back_populates="person")
+
     def __init__(
         self, id: int, surname: str, name: str, identification_number: str, birthdate: datetime, id_gender: int,
             id_department: int, id_locality: int, address_street: str, address_number: str, id_usual_institution: int,
