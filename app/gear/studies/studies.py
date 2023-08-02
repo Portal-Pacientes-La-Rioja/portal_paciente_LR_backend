@@ -11,6 +11,7 @@ from app.models.study import Studies as model_studies
 from app.schemas.responses import ResponseNOK, ResponseOK
 
 ALLOWED_EXTENSIONS = ['pdf', 'jpeg', 'jpg', 'png']
+MAX_FILE_SIZE_MB = 10
 
 
 class StudiesController:
@@ -30,6 +31,12 @@ class StudiesController:
         file_extension = study.filename.split('.')[-1].lower()
         if file_extension not in ALLOWED_EXTENSIONS:
             return ResponseNOK(message="Invalid file type", code=400)
+
+        # Validating the file size
+        file_size_mb = study.file.seek(0, os.SEEK_END) / (1024 * 1024)
+        study.file.seek(0)
+        if file_size_mb > MAX_FILE_SIZE_MB:
+            return ResponseNOK(message="File size too large", code=413)
 
         # Validating duplicates
         existing_study = (
