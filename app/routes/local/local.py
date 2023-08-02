@@ -439,5 +439,11 @@ async def calculate_shortest_route(person_id: int, institution_id: int, db: Sess
     response_model=ResponseOK,
     tags=["Estudios"]
 )
-async def upload_study(person_id: int, description: str, study: UploadFile = File(...), db: Session = Depends(get_db)):
-    return await StudiesController(db).upload_study(person_id, description, study)
+async def upload_study(
+        person_id: int,
+        description: str,
+        study_type_id: int,
+        study: UploadFile = File(...),
+        db: Session = Depends(get_db)
+):
+    return await StudiesController(db).upload_study(person_id, description, study_type_id, study)

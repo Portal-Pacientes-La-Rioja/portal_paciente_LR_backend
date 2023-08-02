@@ -18,7 +18,7 @@ class StudiesController:
     def __init__(self, db: Session):
         self.db = db
 
-    async def upload_study(self, person_id: int, description: str, study: UploadFile = File(...)):
+    async def upload_study(self, person_id: int, description: str, study_type_id: int, study: UploadFile = File(...)):
         # Validating if the person exists
         existing_person = (
             self.db.query(model_person).where(model_person.id == person_id).first()
@@ -60,7 +60,7 @@ class StudiesController:
 
             new_study = model_studies(
                 id_person=person_id,
-                id_study_type=1,
+                id_study_type=study_type_id,
                 study_name=study.filename,
                 description=description,
                 file_path=b64_string_file,
