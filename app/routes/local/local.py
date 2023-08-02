@@ -15,6 +15,7 @@ from app.gear.recover_password.recover_password import (
     send_recovery_password_mail,
     recover_password,
 )
+from app.gear.studies.studies import StudiesController
 from app.gear.turnos.turnos_mailer import send_turno_mail
 from app.gear.validation_mail.validation_mail import validate_email
 from app.main import get_db
@@ -431,3 +432,12 @@ async def calculate_shortest_route(person_id: int, institution_id: int, db: Sess
         return {"polygon": route_calculator}
     except ErrorDirecctionCalculation:
         return {"error": "Some error occurred. Directions can not be calculated"}
+
+
+@router_local.post(
+    "/upload-study",
+    response_model=ResponseOK,
+    tags=["Estudios"]
+)
+async def upload_study(person_id: int, description: str, study: UploadFile = File(...), db: Session = Depends(get_db)):
+    return await StudiesController(db).upload_study(person_id, description, study)
