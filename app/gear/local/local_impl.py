@@ -153,6 +153,72 @@ class LocalImpl:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="User cannot be retrieved.", code=202)
         return value
+    # Indicadores de chaco
+    def indicador_usuarios_activos(self) -> int:
+        try:
+            contador = self.db.query(model_user.id_user_status.like(1)).where(model_user.is_admin == 0).count()
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="There's no active users.", code=417)
+        return contador
+    
+    def indicador_usuarios_master(self) -> int:
+        try:
+            contador = self.db.query(model_user).where(model_user.is_admin == 0).count()
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="There's no active masters.", code=417)
+        return contador
+
+    def indicador_grupo_familiar(self) -> int:
+        try:
+            contador = self.db.query(model_person).where(model_person.identification_number_master!=None).count()
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="No family groups", code=417)
+        return contador
+    #Fin indicadores de chaco
+
+    def indicador_cantidad_usuarios(self) -> int:
+        try:
+            contador = self.db.query(model_user).count()
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Error en la consulta", code=417)
+        return contador
+
+    def indicador_usuarios_validados(self) -> int:
+        try:
+            contador = self.db.query(model_person).filter(model_person.id_admin_status == 2).count()
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Error en la consulta", code=417)
+        return contador
+    
+    def indicador_usuarios_rechazados(self) -> int:
+        try:
+            contador = self.db.query(model_person).filter(model_person.id_admin_status == 3).count()
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Error en la consulta", code=417)
+        return contador
+
+    def indicador_usuarios_pendientes(self) -> int:
+        try:
+            contador = self.db.query(model_person).filter(model_person.id_admin_status == 1).count()
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Error en la consulta", code=417)
+        return contador
+
+
 
     def get_user_by_username(self, username: str):
         try:

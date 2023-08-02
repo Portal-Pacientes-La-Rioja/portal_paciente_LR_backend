@@ -52,6 +52,42 @@ async def version():
         version = f.read().strip()
     return {"version": version}
 
+@router_local.get("/indicador_usuarios_activos")
+async def indicador_usuarios_activos(db: Session = Depends(get_db)):
+    contador = LocalImpl(db).indicador_usuarios_activos()
+    return contador
+
+
+@router_local.get("/indicador_usuarios_master")
+async def indicador_usuarios_master(db: Session = Depends(get_db)):
+    contador = LocalImpl(db).indicador_usuarios_master()
+    return contador
+
+
+@router_local.get("/indicador_grupo_familiar")
+async def indicador_grupo_familiar(db: Session = Depends(get_db)):
+    result = LocalImpl(db).indicador_grupo_familiar()
+    return result
+
+@router_local.get("/indicador_cantidad_usuarios")
+async def indicador_grupo_familiar(db: Session = Depends(get_db)):
+    result = LocalImpl(db).indicador_cantidad_usuarios()
+    return result
+
+@router_local.get("/indicador_usuarios_validados")
+async def indicador_grupo_familiar(db: Session = Depends(get_db)):
+    result = LocalImpl(db).indicador_usuarios_validados()
+    return result
+
+@router_local.get("/indicador_usuarios_recazados")
+async def indicador_grupo_familiar(db: Session = Depends(get_db)):
+    result = LocalImpl(db).indicador_usuarios_rechazados()
+    return result
+
+@router_local.get("/indicador_usuarios_pendientes")
+async def indicador_grupo_familiar(db: Session = Depends(get_db)):
+    result = LocalImpl(db).indicador_usuarios_pendientes()
+    return result
 
 @router_local.post(
     "/login-admin",
