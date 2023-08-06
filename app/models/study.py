@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, func
+from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, func, BIGINT
 from sqlalchemy.orm import relationship
 
 from app.config.database import Base
@@ -8,7 +8,7 @@ class Studies(Base):
     __tablename__ = "studies"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    id_person = Column(Integer, ForeignKey('person.id'), nullable=True)
+    id_person = Column(BIGINT, ForeignKey('person.id'), nullable=False)
     id_study_type = Column(Integer, ForeignKey('study_type.id'), nullable=False)
     study_name = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)

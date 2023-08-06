@@ -74,4 +74,3 @@ class StudiesController:
         except Exception as e:
             self.db.rollback()
             return ResponseNOK(message=f"Error: {str(e)}", code=500)
-
