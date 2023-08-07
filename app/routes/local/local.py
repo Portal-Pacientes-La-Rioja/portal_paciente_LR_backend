@@ -8,7 +8,10 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from app.config.config import SECRET_KEY, ALGORITHM
-from app.gear.geolocation.route_calculation import ShortestRoute, ErrorDirecctionCalculation
+from app.gear.geolocation.route_calculation import (
+    ShortestRoute,
+    ErrorDirecctionCalculation,
+)
 from app.gear.local.local_impl import LocalImpl
 from app.gear.log.main_logger import MainLogger, logging
 from app.gear.recover_password.recover_password import (
@@ -39,6 +42,7 @@ from app.schemas.responses import ResponseOK, ResponseNOK
 from app.schemas.role import Role
 from app.schemas.services import Services
 from app.schemas.token import Token
+from app.auth.auth import get_current_user
 
 oauth_schema = OAuth2PasswordBearer(tokenUrl="/login")
 oauth_schema_admin = OAuth2PasswordBearer(tokenUrl="/login-admin")
@@ -126,7 +130,10 @@ async def update_message(message: Message, db: Session = Depends(get_db)):
     responses={417: {"model": ResponseNOK}},
     tags=["Message"],
 )
-async def delete_message(message_id: int, db: Session = Depends(get_db)):
+async def delete_message(
+    message_id: int,
+    db: Session = Depends(get_db),
+):
     return LocalImpl(db).delete_message(message_id)
 
 
@@ -141,8 +148,11 @@ async def send_message(
     category_id: int,
     is_for_all_categories: bool,
     db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user),
 ):
-    return LocalImpl(db).send_message(message_id, category_id, is_for_all_categories)
+    return LocalImpl(db).send_message(
+        message_id, category_id, is_for_all_categories, current_user
+    )
 
 
 @router_local.get(
@@ -375,16 +385,16 @@ async def send_email_to_recover_password(email: str, db: Session = Depends(get_d
 
 
 @router_local.get("/change-password", tags=["User and person"])
-async def change_password_password(token: str, password: str, db: Session = Depends(get_db)):
+async def change_password_password(
+    token: str, password: str, db: Session = Depends(get_db)
+):
     return await recover_password(token, password, db)
 
 
 @router_local.post("/send-turno-mail", tags=["User and person"])
 async def enviar_turno_mail(person_id: str, subject: str, body: str):
     await send_turno_mail(person_id, subject, body)
-    return ResponseOK(
-        message="Email send it", code=200
-    )
+    return ResponseOK(message="Email send it", code=200)
 
 
 @router_local.get(
@@ -426,9 +436,13 @@ async def get_servicios_by_id_service(id_services: int, db: Session = Depends(ge
 
 
 @router_local.get("/shortest-route", tags=["Shortest Route"])
-async def calculate_shortest_route(person_id: int, institution_id: int, db: Session = Depends(get_db)):
+async def calculate_shortest_route(
+    person_id: int, institution_id: int, db: Session = Depends(get_db)
+):
     try:
-        route_calculator = ShortestRoute(db).calculate_shortest_route(person_id, institution_id)
+        route_calculator = ShortestRoute(db).calculate_shortest_route(
+            person_id, institution_id
+        )
         return {"polygon": route_calculator}
     except ErrorDirecctionCalculation:
         return {"error": "Some error occurred. Directions can not be calculated"}

@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional
 
 from sqlalchemy.orm import Session
 
@@ -13,11 +13,29 @@ from app.schemas.user import CreateUserAdmin
 from app.schemas.user import UserAdmin
 
 
-def list_of_persons(only_accepted: bool, db: Session):
+def list_of_persons(only_accepted: bool, db: Session, username: Optional[str] = None):
     """
     Return list of persons, only name surname and if is accepted or
     not in the system.
     """
+    admin_user: model_user = (
+        db.query(model_user).where(model_user.username == username).first()
+    )
+
+    if not admin_user.is_admin:
+        return []
+
+    # A superadmin can query users from all institutions
+    if admin_user.is_superadmin:
+        cond_institution = True
+    else:
+        cond_institution = (
+            model_person.id_usual_institution.in_(
+                [inst.id for inst in admin_user.institutions]
+            )
+            if admin_user.institutions
+            else True
+        )
 
     if only_accepted is None:
         cond = True
@@ -25,35 +43,47 @@ def list_of_persons(only_accepted: bool, db: Session):
         if only_accepted:
             cond = model_person.id_admin_status == AdminStatusEnum.validated.value
         else:
-            cond = (model_person.id_admin_status == AdminStatusEnum.validation_pending.value
-                    or model_person.id_admin_status == AdminStatusEnum.validation_rejected.value)
+            cond = (
+                model_person.id_admin_status == AdminStatusEnum.validation_pending.value
+                or model_person.id_admin_status
+                == AdminStatusEnum.validation_rejected.value
+            )
 
-    p_list = db.query(model_person,
-                      model_person.id,
-                      model_person.surname,
-                      model_person.name,
-                      model_person.is_deleted,
-                      model_person.id_admin_status,
-                      model_person.id_person_status,
-                      model_person.id_usual_institution,
-                      model_user.username,
-                      model_person.inst_from_portal)\
-        .join(model_user, model_user.id_person == model_person.id) \
-        .where(model_person.is_deleted == None) \
-        .where(cond) \
+    p_list = (
+        db.query(
+            model_person,
+            model_person.id,
+            model_person.surname,
+            model_person.name,
+            model_person.is_deleted,
+            model_person.id_admin_status,
+            model_person.id_person_status,
+            model_person.id_usual_institution,
+            model_user.username,
+            model_person.inst_from_portal,
+        )
+        .join(model_user, model_user.id_person == model_person.id)
+        .where(model_person.is_deleted == None)
+        .where(cond)
+        .where(cond_institution)
         .all()
+    )
 
     persons_to_return = []
 
     for p in p_list:
-        persons_to_return.append(PersonsReduced(id=p.id,
-                                                username=p.username,
-                                                name=p.name,
-                                                surname=p.surname,
-                                                id_admin_status=p.id_admin_status,
-                                                id_person_status=p.id_person_status,
-                                                id_usual_institution=p.id_usual_institution,
-                                                inst_from_portal=p.inst_from_portal))
+        persons_to_return.append(
+            PersonsReduced(
+                id=p.id,
+                username=p.username,
+                name=p.name,
+                surname=p.surname,
+                id_admin_status=p.id_admin_status,
+                id_person_status=p.id_person_status,
+                id_usual_institution=p.id_usual_institution,
+                inst_from_portal=p.inst_from_portal,
+            )
+        )
     return persons_to_return
 
 
@@ -69,27 +99,41 @@ def list_of_persons_to_accept(db: Session):
     return list_of_persons(False, db)
 
 
-def list_of_persons_in_general(db: Session):
+def list_of_persons_in_general(db: Session, username: Optional[str] = None):
     """
     Return list of persons, without considering status.
     """
-    return list_of_persons(None, db)
+    return list_of_persons(None, db, username)
 
 
 def accept_a_person(person_username: PersonUsername, db: Session):
-    return change_person_status_by_admin(person_username, AdminStatusEnum.validated.value, db)
+    return change_person_status_by_admin(
+        person_username, AdminStatusEnum.validated.value, db
+    )
 
 
 def not_accept_a_person(person_username: PersonUsername, db: Session):
-    return change_person_status_by_admin(person_username, AdminStatusEnum.validation_rejected.value, db)
+    return change_person_status_by_admin(
+        person_username, AdminStatusEnum.validation_rejected.value, db
+    )
 
 
-def change_person_status_by_admin(person_username: PersonUsername, admin_status_id: int, db: Session):
+def change_person_status_by_admin(
+    person_username: PersonUsername, admin_status_id: int, db: Session
+):
     try:
-        existing_user = db.query(model_user).where(model_user.username == person_username.username).first()
+        existing_user = (
+            db.query(model_user)
+            .where(model_user.username == person_username.username)
+            .first()
+        )
 
         if existing_user is not None:
-            existing_person = db.query(model_person).where(model_person.id == existing_user.id_person).first()
+            existing_person = (
+                db.query(model_person)
+                .where(model_person.id == existing_user.id_person)
+                .first()
+            )
 
             if existing_person is not None:
                 existing_person.id_admin_status = admin_status_id
@@ -108,10 +152,18 @@ def change_person_status_by_admin(person_username: PersonUsername, admin_status_
 
 def remove_a_person(person_username: PersonUsername, db: Session):
     try:
-        existing_user = db.query(model_user).where(model_user.username == person_username.username).first()
+        existing_user = (
+            db.query(model_user)
+            .where(model_user.username == person_username.username)
+            .first()
+        )
 
         if existing_user is not None:
-            existing_person = db.query(model_person).where(model_person.id == existing_user.id_person).first()
+            existing_person = (
+                db.query(model_person)
+                .where(model_person.id == existing_user.id_person)
+                .first()
+            )
 
             if existing_person is not None:
                 existing_person.is_deleted = True
@@ -145,13 +197,21 @@ def create_user_admin(user: CreateUserAdmin, db: Session):
     return ResponseOK(message="User created successfully.", code=201)
 
 
-def assign_institutions_to_admins(username: str, institutions_ids: List[int], db: Session):
+def assign_institutions_to_admins(
+    username: str, institutions_ids: List[int], db: Session
+):
     try:
-        user = db.query(model_user).where(model_user.username == username).one()  # type: model_user
+        user = (
+            db.query(model_user).where(model_user.username == username).one()
+        )  # type: model_user
         if not user.admin:
             return ResponseNOK(message=f"Hey, {username} is not an Admin.", code=417)
 
-        institutions = db.query(model_institution).filter(model_institution.id.in_(institutions_ids)).all()
+        institutions = (
+            db.query(model_institution)
+            .filter(model_institution.id.in_(institutions_ids))
+            .all()
+        )
         user.institutions = institutions
         db.commit()
 
@@ -175,7 +235,11 @@ def list_of_admins(db: Session):
 
 def get_admin_by_id(user_id: int, db: Session):
     try:
-        users = db.query(model_user).where((model_user.id == user_id) & (model_user.is_admin == 1)).all()
+        users = (
+            db.query(model_user)
+            .where((model_user.id == user_id) & (model_user.is_admin == 1))
+            .all()
+        )
     except Exception as err:
         print(err)
         db.rollback()
@@ -203,7 +267,9 @@ def on_off_admin(user_id: int, db: Session):
     return ResponseOK(message="Updated successfully.", code=201)
 
 
-def change_password(admin: CreateUserAdmin, db: Session) -> Union[ResponseOK, ResponseNOK]:
+def change_password(
+    admin: CreateUserAdmin, db: Session
+) -> Union[ResponseOK, ResponseNOK]:
     try:
         existing_admin = (
             db.query(model_user)
