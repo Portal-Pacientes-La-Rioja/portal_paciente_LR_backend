@@ -1,5 +1,6 @@
 import base64
 import os
+import filetype
 
 from fastapi import File, UploadFile
 from sqlalchemy.orm import Session
@@ -31,6 +32,12 @@ class StudiesController:
         file_extension = study.filename.split('.')[-1].lower()
         if file_extension not in ALLOWED_EXTENSIONS:
             return ResponseNOK(message="Invalid file type", code=400)
+
+        # Validating the MIMETYPE
+        mime_type = filetype.guess(study.file.read())
+        study.file.seek(0)
+        if mime_type is None or mime_type.mime.split('/')[-1] not in ALLOWED_EXTENSIONS:
+            return ResponseNOK(message="Invalid MIMETYPE", code=400)
 
         # Validating the file size
         file_size_mb = study.file.seek(0, os.SEEK_END) / (1024 * 1024)
