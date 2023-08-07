@@ -24,6 +24,13 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
 
+    # Adding initial data to study_type
+    op.execute("INSERT INTO study_type (type_name) VALUES ('Estudios de Imágenes')")
+    op.execute("INSERT INTO study_type (type_name) VALUES ('Estudios de Laboratorio')")
+    op.execute("INSERT INTO study_type (type_name) VALUES ('Estudios Observacionales')")
+    op.execute("INSERT INTO study_type (type_name) VALUES ('Resumen de Historia Clínica')")
+    op.execute("INSERT INTO study_type (type_name) VALUES ('Otros')")
+
     op.create_table('studies',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('id_person', sa.BIGINT(), nullable=False),
