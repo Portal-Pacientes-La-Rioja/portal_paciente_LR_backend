@@ -30,7 +30,7 @@ def upgrade():
     sa.Column('id_study_type', sa.Integer(), nullable=False),
     sa.Column('study_name', sa.String(length=100), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('file_path', sa.Text(), nullable=True),
+    sa.Column('file_path', sa.dialects.mysql.LONGTEXT, nullable=True),
     sa.Column('upload_date', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['id_study_type'], ['study_type.id'], ),
     sa.PrimaryKeyConstraint('id')

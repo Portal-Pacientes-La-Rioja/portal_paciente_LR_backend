@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, func, BIGINT
+from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import relationship
 
 from app.config.database import Base
@@ -12,7 +13,7 @@ class Studies(Base):
     id_study_type = Column(Integer, ForeignKey('study_type.id'), nullable=False)
     study_name = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
-    file_path = Column(Text, nullable=True)
+    file_path = Column(LONGTEXT, nullable=True)
     upload_date = Column(DateTime, default=func.now(), nullable=False)
 
     person = relationship("Person", back_populates="studies")
