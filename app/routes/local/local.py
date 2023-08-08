@@ -41,6 +41,7 @@ from app.schemas.responses import HTTPError
 from app.schemas.responses import ResponseOK, ResponseNOK
 from app.schemas.role import Role
 from app.schemas.services import Services
+from app.schemas.study import Studies
 from app.schemas.study_type import StudyType
 from app.schemas.token import Token
 from app.auth.auth import get_current_user
@@ -472,3 +473,13 @@ async def upload_study(
 )
 async def get_study_types(db: Session = Depends(get_db)):
     return StudiesController(db).get_study_types()
+
+
+@router_local.get(
+    "/studies",
+    response_model=List[Studies],
+    responses={417: {"model": ResponseNOK}},
+    tags=["Estudios"]
+)
+async def get_studies_for_person(person_id: int, db: Session = Depends(get_db)):
+    return StudiesController(db).get_studies_for_person(person_id)
