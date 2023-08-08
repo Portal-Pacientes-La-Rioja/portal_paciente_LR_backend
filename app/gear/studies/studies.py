@@ -100,3 +100,29 @@ class StudiesController:
         except Exception as e:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
+
+    def get_studies_for_person(self, person_id: int):
+        # Validating person_id
+        if person_id is None:
+            return ResponseNOK(message="Person ID is required", code=400)
+
+        try:
+            result = []
+            studies_list = self.db.query(model_studies).where(model_studies.id_person == person_id).all()
+
+            # No studies found for the specified person
+            if not studies_list:
+                return result
+
+            for u in studies_list:
+                result.append({
+                    "study_id": u.id,
+                    "study_name": u.study_name,
+                    "description": u.description,
+                    "upload_date": u.upload_date
+                })
+
+            return result
+        except Exception as e:
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message=f"Error: {str(e)}", code=417)
