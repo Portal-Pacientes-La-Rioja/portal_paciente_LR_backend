@@ -493,3 +493,13 @@ async def get_studies_for_person(person_id: int, db: Session = Depends(get_db)):
 )
 async def get_study_file(study_id: int, db: Session = Depends(get_db)):
     return StudiesController(db).get_study_by_id(study_id)
+
+
+@router_local.get(
+    "/studies/type/{study_type_id}",
+    response_model=List[Studies],
+    responses={417: {"model": ResponseNOK}},
+    tags=["Estudios"]
+)
+async def get_studies_by_type(study_type_id: int, db: Session = Depends(get_db)):
+    return StudiesController(db).get_studies_by_type(study_type_id)
