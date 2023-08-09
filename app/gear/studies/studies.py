@@ -148,3 +148,25 @@ class StudiesController:
         except Exception as e:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
+
+    def get_studies_by_type(self, study_type_id: int):
+        try:
+            result = []
+            studies_list = self.db.query(model_studies).where(model_studies.id_study_type == study_type_id).all()
+
+            # No studies found for the specified type
+            if not studies_list:
+                return result
+
+            for u in studies_list:
+                result.append({
+                    "study_id": u.id,
+                    "study_name": u.study_name,
+                    "description": u.description,
+                    "upload_date": u.upload_date
+                })
+
+            return result
+        except Exception as e:
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message=f"Error: {str(e)}", code=417)
