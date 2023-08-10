@@ -18,6 +18,7 @@ from app.gear.recover_password.recover_password import (
     send_recovery_password_mail,
     recover_password,
 )
+from app.gear.studies.studies import StudiesController
 from app.gear.turnos.turnos_mailer import send_turno_mail
 from app.gear.validation_mail.validation_mail import validate_email
 from app.main import get_db
@@ -40,6 +41,8 @@ from app.schemas.responses import HTTPError
 from app.schemas.responses import ResponseOK, ResponseNOK
 from app.schemas.role import Role
 from app.schemas.services import Services
+from app.schemas.study import Studies
+from app.schemas.study_type import StudyType
 from app.schemas.token import Token
 from app.auth.auth import get_current_user
 
@@ -445,3 +448,58 @@ async def calculate_shortest_route(
         return {"polygon": route_calculator}
     except ErrorDirecctionCalculation:
         return {"error": "Some error occurred. Directions can not be calculated"}
+
+
+@router_local.post(
+    "/upload-study",
+    response_model=ResponseOK,
+    tags=["Estudios"]
+)
+async def upload_study(
+        person_id: int,
+        description: str,
+        study_type_id: int,
+        study: UploadFile = File(...),
+        db: Session = Depends(get_db)
+):
+    return await StudiesController(db).upload_study(person_id, description, study_type_id, study)
+
+
+@router_local.get(
+    "/study-types",
+    response_model=List[StudyType],
+    responses={417: {"model": ResponseNOK}},
+    tags=["Estudios"]
+)
+async def get_study_types(db: Session = Depends(get_db)):
+    return StudiesController(db).get_study_types()
+
+
+@router_local.get(
+    "/studies",
+    response_model=List[Studies],
+    responses={417: {"model": ResponseNOK}},
+    tags=["Estudios"]
+)
+async def get_studies_for_person(person_id: int, db: Session = Depends(get_db)):
+    return StudiesController(db).get_studies_for_person(person_id)
+
+
+@router_local.get(
+    "/study/{study_id}/file",
+    response_model=ResponseOK,
+    responses={417: {"model": ResponseNOK}},
+    tags=["Estudios"]
+)
+async def get_study_file(study_id: int, db: Session = Depends(get_db)):
+    return StudiesController(db).get_study_by_id(study_id)
+
+
+@router_local.get(
+    "/studies/type/{study_type_id}",
+    response_model=List[Studies],
+    responses={417: {"model": ResponseNOK}},
+    tags=["Estudios"]
+)
+async def get_studies_by_type(study_type_id: int, db: Session = Depends(get_db)):
+    return StudiesController(db).get_studies_by_type(study_type_id)
