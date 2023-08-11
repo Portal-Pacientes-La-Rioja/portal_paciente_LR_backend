@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config.database import SessionLocal
 from app.gear.local.local_impl import LocalImpl
 from app.gear.log.main_logger import MainLogger, logging
+from fastapi_pagination import Page, add_pagination, paginate
 
 
 # region Dependency
@@ -36,6 +37,8 @@ app = FastAPI(
 
 log = MainLogger()
 module = logging.getLogger(__name__)
+
+add_pagination(app)
 
 # region CORS
 

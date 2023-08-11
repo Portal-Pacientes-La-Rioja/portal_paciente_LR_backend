@@ -81,4 +81,4 @@ unidecode==1.3.6
 googlemaps==4.10.0
 polyline==2.0.0
 filetype==1.2.0
-#fastapi-pagination==0.12.5
+fastapi-pagination==0.12.5

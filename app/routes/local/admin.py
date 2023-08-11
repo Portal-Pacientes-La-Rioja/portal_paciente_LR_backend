@@ -14,6 +14,7 @@ from app.gear.local.admin import (
     not_accept_a_person,
     on_off_admin,
     remove_a_person,
+    list_person_paginated,
 )
 from app.main import get_db
 from app.routes.common import router_admin
@@ -23,7 +24,7 @@ from app.schemas.returned_object import ReturnMessage
 from app.schemas.user import CreateUserAdmin, UserAdmin
 from fastapi import Depends
 from sqlalchemy.orm import Session
-# from fastapi_pagination import Page
+from fastapi_pagination import Page
 
 
 @router_admin.delete(
@@ -88,6 +89,18 @@ async def persons(
     db: Session = Depends(get_db), current_user: str = Depends(get_current_user)
 ):
     return list_of_persons_in_general(db, current_user)
+
+
+@router_admin.get(
+    "/persons-paginated",
+    name="List of persons paginated",
+    response_model=Page,
+    description="List of all Persons in the system paginated",
+)
+async def persons_paginated(
+    db: Session = Depends(get_db), current_user: str = Depends(get_current_user)
+):
+    return list_person_paginated(db, current_user)
 
 
 # TODO add response model

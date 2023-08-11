@@ -1,6 +1,7 @@
 from typing import List, Union, Optional
 
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from app.models.institutions import Institutions as model_institution
 from app.models.person import Person as model_person
@@ -11,6 +12,7 @@ from app.schemas.responses import ResponseNOK, ResponseOK
 from app.schemas.returned_object import ReturnMessage
 from app.schemas.user import CreateUserAdmin
 from app.schemas.user import UserAdmin
+from fastapi_pagination.ext.sqlalchemy import paginate
 
 
 def list_of_persons(only_accepted: bool, db: Session, username: Optional[str] = None):
@@ -104,6 +106,25 @@ def list_of_persons_in_general(db: Session, username: Optional[str] = None):
     Return list of persons, without considering status.
     """
     return list_of_persons(None, db, username)
+
+
+def list_person_paginated(db: Session, username: Optional[str] = None):
+    """
+    Return list of persons, without considering status. Paginated
+    """
+
+    return paginate(
+        db,
+        select(
+            model_person.id,
+            model_person.surname,
+            model_person.name,
+            model_person.is_deleted,
+            model_person.id_admin_status,
+            model_person.id_person_status,
+            model_person.id_usual_institution,
+        ),
+    )
 
 
 def accept_a_person(person_username: PersonUsername, db: Session):
