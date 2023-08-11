@@ -37,7 +37,6 @@ SUPERADMIN_ROUTES = [
     "List of id_admin_status Person",
     "List of id_admin_status Person",
     "List of persons",
-    "List of persons paginated",
     "Create an user admin",
     "create_admin",
     "assign_institutions",
