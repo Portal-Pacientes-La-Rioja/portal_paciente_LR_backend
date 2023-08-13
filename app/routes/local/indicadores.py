@@ -9,7 +9,7 @@ from app.schemas.responses import ResponseOK, ResponseNOK
 from app.routes.common import router_indicadores
 
 
-###################
+###################CHACO#######################
 
 @router_indicadores.get(
 "/indicador_usuarios_activos",
@@ -40,6 +40,7 @@ tags=["Indicadores"],
 async def indicador_grupo_familiar(db: Session = Depends(get_db)):
     result = LocalImpl(db).indicador_grupo_familiar()
     return result
+###################################################################
 
 @router_indicadores.get(
 "/indicador_cantidad_usuarios",
@@ -77,5 +78,5 @@ tags=["Indicadores"],
 async def indicador_grupo_familiar(db: Session = Depends(get_db)):
     result = LocalImpl(db).indicador_usuarios_pendientes()
     return result
-##############3
+
 

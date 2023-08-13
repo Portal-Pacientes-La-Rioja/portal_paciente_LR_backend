@@ -23,6 +23,7 @@ from app.routes.hsi import hsi
 from app.routes.local import local
 from app.routes.local import admin
 from app.routes.local import institution
+from app.routes.local import indicadores
 from app.routes.sumar import sumar
 from app.routes.local import datos_gob_ar
 
@@ -55,6 +56,7 @@ app.include_router(hsi.router_hsi)
 app.include_router(local.router_local)
 app.include_router(admin.router_admin)
 app.include_router(institution.router_institutions)
+app.include_router(indicadores.router_indicadores)
 app.include_router(sumar.router_sumar)
 app.include_router(datos_gob_ar.router_datos)
 
