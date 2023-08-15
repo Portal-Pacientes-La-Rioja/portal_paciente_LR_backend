@@ -39,6 +39,7 @@ from app.schemas.person_status import PersonStatus
 from app.schemas.person_user import PersonUser as schema_person_user
 from app.schemas.responses import HTTPError
 from app.schemas.responses import ResponseOK, ResponseNOK
+from app.schemas.returned_object import ReturnMessage
 from app.schemas.role import Role
 from app.schemas.services import Services
 from app.schemas.study import Studies
@@ -503,3 +504,14 @@ async def get_study_file(study_id: int, db: Session = Depends(get_db)):
 )
 async def get_studies_by_type(study_type_id: int, db: Session = Depends(get_db)):
     return StudiesController(db).get_studies_by_type(study_type_id)
+
+
+@router_local.delete(
+    "/delete-study",
+    name="Remove a Study",
+    response_model=ReturnMessage,
+    description="Remove a Study from the system",
+    tags=["Estudios"]
+)
+async def delete_study(study_id: int, db: Session = Depends(get_db)):
+    return StudiesController(db).delete_study(study_id)

@@ -14,6 +14,7 @@ from app.models.person import Person as model_person
 from app.models.study import Studies as model_studies
 from app.models.study_type import StudyType as model_study_type
 from app.schemas.responses import ResponseNOK, ResponseOK
+from app.schemas.returned_object import ReturnMessage
 
 ALLOWED_EXTENSIONS = ['pdf', 'jpeg', 'jpg', 'png']
 MAX_FILE_SIZE_MB = 10
@@ -170,3 +171,27 @@ class StudiesController:
         except Exception as e:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
+
+    def delete_study(self, study_id: int):
+        try:
+            # Validating if the study exists
+            existing_study = self.db.query(model_studies).get(study_id)
+
+            if existing_study is None:
+                return ReturnMessage(message="Nonexistent study.", code=417)
+
+            # Removing file from directory
+            file_path = os.path.join(UPLOAD_DIR, existing_study.study_name)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+            # Removing file from database
+            self.db.delete(existing_study)
+            self.db.commit()
+
+            return ReturnMessage(message="Study deleted successfully.", code=201)
+
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ReturnMessage(message="Study cannot be deleted.", code=417)
