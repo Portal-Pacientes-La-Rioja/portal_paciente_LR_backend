@@ -53,8 +53,8 @@ VALIDATE_EMAIL_PATH = LR_BASE_API + "/validate-email"
 
 # region Logging
 
-LOG_FORMAT = '[%(asctime)s][%(levelname)s][%(name)s][%(message)s]'
-LOG_PATH = './app.log'
+LOG_FORMAT = "[%(asctime)s][%(levelname)s][%(name)s][%(message)s]"
+LOG_PATH = "./app.log"
 
 # endregion
 
@@ -76,7 +76,9 @@ LOCAL_FILE_DOWNLOAD_DIRECTORY = os.getenv("TMP_FILES_DOWNLOAD")
 
 # TODO: Esto va a dejar de funcionar le 30 de mayo
 MAIL_USERNAME = os.getenv("MAIL_USERNAME", "")
-MAIL_FROM = os.getenv("MAIL_FROM", "no@mail.com")  # ConnectionConfig object need it as a valid mail format
+MAIL_FROM = os.getenv(
+    "MAIL_FROM", "no@mail.com"
+)  # ConnectionConfig object need it as a valid mail format
 MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")
 MAIL_PORT = os.getenv("MAIL_PORT", 123)
 MAIL_SERVER = os.getenv("MAIL_SERVER", "")
@@ -88,8 +90,12 @@ MAIL_SERVER = os.getenv("MAIL_SERVER", "")
 SERVER_IP = os.getenv("SERVER_IP", "http://127.0.0.1:8000")
 VALIDATION_ENDPOINT = os.getenv("VALIDATION_ENDPOINT", LR_BASE_API + "/validate-email")
 VALIDATION_MAIL_URL = f"{SERVER_IP}{VALIDATION_ENDPOINT}"
-TEMPLATE_FOLDER_VALIDATION_MAIL = os.getenv("TEMPLATE_FOLDER_VALIDATION_MAIL", "/code/app/templates/")
-DEBUG_MAIL_VALIDATION = os.getenv("DEBUG_MAIL_VALIDATION", False)  # TODO: REMOVE THIS BEFORE GO TO PRODUCTION
+TEMPLATE_FOLDER_VALIDATION_MAIL = os.getenv(
+    "TEMPLATE_FOLDER_VALIDATION_MAIL", "/code/app/templates/"
+)
+DEBUG_MAIL_VALIDATION = os.getenv(
+    "DEBUG_MAIL_VALIDATION", False
+)  # TODO: REMOVE THIS BEFORE GO TO PRODUCTION
 
 # endregion
 
@@ -97,16 +103,30 @@ DEBUG_MAIL_VALIDATION = os.getenv("DEBUG_MAIL_VALIDATION", False)  # TODO: REMOV
 
 RECOVERY_ENDPOINT = os.getenv("RECOVERY_ENDPOINT", LR_BASE_API + "/recovery-password")
 RECOVERY_PASSWORD_URL = f"{SERVER_IP}{RECOVERY_ENDPOINT}"
-TEMPLATE_FOLDER_RECOVERY_PASSWORD = os.getenv("TEMPLATE_FOLDER_RECOVERY_PASSWORD", "/code/app/templates/")
+TEMPLATE_FOLDER_RECOVERY_PASSWORD = os.getenv(
+    "TEMPLATE_FOLDER_RECOVERY_PASSWORD", "/code/app/templates/"
+)
 
 # endregion
 
 # DATOS GOB AR
-API_DATOS_GOB_AR = os.getenv("API_DATOS_GOB_AR", "https://apis.datos.gob.ar/georef/api/")
+API_DATOS_GOB_AR = os.getenv(
+    "API_DATOS_GOB_AR", "https://apis.datos.gob.ar/georef/api/"
+)
 API_DATOS_GOB_AR_PROVINCIAS = API_DATOS_GOB_AR + "provincias"
 API_DATOS_GOB_AR_DEPARTAMENTOS = API_DATOS_GOB_AR + "departamentos"
 API_DATOS_GOB_AR_LOCALIDADES = API_DATOS_GOB_AR + "localidades"
 
 # region google maps
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+# endregion
+
+
+# region turnos manager
+
+TURNOS_MANAGER_HOST = os.getenv("TURNOS_MANAGER_HOST", "127.0.0.1")
+TURNOS_MANAGER_PORT = os.getenv("TURNOS_MANAGER_PORT", 9000)
+TURNOS_MANAGER_URL = (
+    f"http://{TURNOS_MANAGER_HOST}:{TURNOS_MANAGER_PORT}/turnos/api/v1/turnos/"
+)
 # endregion

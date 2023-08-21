@@ -1,3 +1,6 @@
+import requests
+import json
+
 from datetime import datetime
 from pathlib import Path
 from typing import List, Union, Dict
@@ -7,7 +10,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from app.config.config import SECRET_KEY, ALGORITHM
+from app.config.config import SECRET_KEY, ALGORITHM, TURNOS_MANAGER_URL
 from app.gear.geolocation.route_calculation import (
     ShortestRoute,
     ErrorDirecctionCalculation,
@@ -395,9 +398,22 @@ async def change_password_password(
 
 
 @router_local.post("/send-turno-mail", tags=["User and person"])
-async def enviar_turno_mail(person_id: str, subject: str, body: str):
+async def enviar_turno_mail(
+    person_id: str, subject: str, body: str, db: Session = Depends(get_db)
+):
     await send_turno_mail(person_id, subject, body)
-    return ResponseOK(message="Email send it", code=200)
+    id_institution = LocalImpl(db).get_institutions_by_person_id(person_id)
+    if isinstance(id_institution, ResponseNOK):
+        return id_institution
+    turno = {
+        "id_person": person_id,
+        "id_establecimiento": int(id_institution["id_institution"]),
+        "time_created": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "description": body,
+    }
+    response = requests.post(TURNOS_MANAGER_URL, json=turno)
+
+    return json.loads(response.text)
 
 
 @router_local.get(
@@ -451,26 +467,24 @@ async def calculate_shortest_route(
         return {"error": "Some error occurred. Directions can not be calculated"}
 
 
-@router_local.post(
-    "/upload-study",
-    response_model=ResponseOK,
-    tags=["Estudios"]
-)
+@router_local.post("/upload-study", response_model=ResponseOK, tags=["Estudios"])
 async def upload_study(
-        person_id: int,
-        description: str,
-        study_type_id: int,
-        study: UploadFile = File(...),
-        db: Session = Depends(get_db)
+    person_id: int,
+    description: str,
+    study_type_id: int,
+    study: UploadFile = File(...),
+    db: Session = Depends(get_db),
 ):
-    return await StudiesController(db).upload_study(person_id, description, study_type_id, study)
+    return await StudiesController(db).upload_study(
+        person_id, description, study_type_id, study
+    )
 
 
 @router_local.get(
     "/study-types",
     response_model=List[StudyType],
     responses={417: {"model": ResponseNOK}},
-    tags=["Estudios"]
+    tags=["Estudios"],
 )
 async def get_study_types(db: Session = Depends(get_db)):
     return StudiesController(db).get_study_types()
@@ -480,7 +494,7 @@ async def get_study_types(db: Session = Depends(get_db)):
     "/studies",
     response_model=List[Studies],
     responses={417: {"model": ResponseNOK}},
-    tags=["Estudios"]
+    tags=["Estudios"],
 )
 async def get_studies_for_person(person_id: int, db: Session = Depends(get_db)):
     return StudiesController(db).get_studies_for_person(person_id)
@@ -490,7 +504,7 @@ async def get_studies_for_person(person_id: int, db: Session = Depends(get_db)):
     "/study/{study_id}/file",
     response_model=ResponseOK,
     responses={417: {"model": ResponseNOK}},
-    tags=["Estudios"]
+    tags=["Estudios"],
 )
 async def get_study_file(study_id: int, db: Session = Depends(get_db)):
     return StudiesController(db).get_study_by_id(study_id)
@@ -500,7 +514,7 @@ async def get_study_file(study_id: int, db: Session = Depends(get_db)):
     "/studies/type/{study_type_id}",
     response_model=List[Studies],
     responses={417: {"model": ResponseNOK}},
-    tags=["Estudios"]
+    tags=["Estudios"],
 )
 async def get_studies_by_type(study_type_id: int, db: Session = Depends(get_db)):
     return StudiesController(db).get_studies_by_type(study_type_id)
@@ -511,7 +525,7 @@ async def get_studies_by_type(study_type_id: int, db: Session = Depends(get_db))
     name="Remove a Study",
     response_model=ReturnMessage,
     description="Remove a Study from the system",
-    tags=["Estudios"]
+    tags=["Estudios"],
 )
 async def delete_study(study_id: int, db: Session = Depends(get_db)):
     return StudiesController(db).delete_study(study_id)
