@@ -545,6 +545,18 @@ class LocalImpl:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
 
+    def get_institutions_by_person_id(
+        self, person_id: int
+    ) -> Union[List[Dict], ResponseNOK]:
+        try:
+            person = (
+                self.db.query(model_person).filter(model_person.id == person_id).first()
+            )
+            return {"id_institution": person.id_usual_institution}
+        except Exception as e:
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message=f"Error: {str(e)}", code=417)
+
     def get_merge_institutions(self) -> Union[List[Dict], ResponseNOK]:
         """
         We need to have coordinated the institutions from HSI system and Portal. The
@@ -1261,16 +1273,21 @@ class LocalImpl:
         return (
             self.db.query(model_services).where(model_services.id == id_service).first()
         )
-# Indicadores de chaco
+
+    # Indicadores de chaco
     def indicador_usuarios_activos(self) -> int:
         try:
-            contador = self.db.query(model_user.id_user_status.like(1)).where(model_user.is_admin == 0).count()
+            contador = (
+                self.db.query(model_user.id_user_status.like(1))
+                .where(model_user.is_admin == 0)
+                .count()
+            )
         except Exception as e:
             self.db.rollback()
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="There's no active users.", code=417)
         return contador
-    
+
     def indicador_usuarios_master(self) -> int:
         try:
             contador = self.db.query(model_user).where(model_user.is_admin == 0).count()
@@ -1282,13 +1299,18 @@ class LocalImpl:
 
     def indicador_grupo_familiar(self) -> int:
         try:
-            contador = self.db.query(model_person).where(model_person.identification_number_master!=None).count()
+            contador = (
+                self.db.query(model_person)
+                .where(model_person.identification_number_master != None)
+                .count()
+            )
         except Exception as e:
             self.db.rollback()
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="No family groups", code=417)
         return contador
-    #Fin indicadores de chaco
+
+    # Fin indicadores de chaco
 
     def indicador_cantidad_usuarios(self) -> int:
         try:
@@ -1300,20 +1322,27 @@ class LocalImpl:
             return ResponseNOK(message="Error en la consulta", code=417)
         return response_data
 
-
     def indicador_usuarios_validados(self) -> int:
         try:
-            contador = self.db.query(model_person).filter(model_person.id_admin_status == 2).count()
+            contador = (
+                self.db.query(model_person)
+                .filter(model_person.id_admin_status == 2)
+                .count()
+            )
             response_data = {"usuarios_validados": contador}
         except Exception as e:
             self.db.rollback()
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="Error en la consulta", code=417)
         return response_data
-    
+
     def indicador_usuarios_rechazados(self) -> int:
         try:
-            contador = self.db.query(model_person).filter(model_person.id_admin_status == 3).count()
+            contador = (
+                self.db.query(model_person)
+                .filter(model_person.id_admin_status == 3)
+                .count()
+            )
             response_data = {"usuarios_rechazados": contador}
         except Exception as e:
             self.db.rollback()
@@ -1323,7 +1352,11 @@ class LocalImpl:
 
     def indicador_usuarios_pendientes(self) -> int:
         try:
-            contador = self.db.query(model_person).filter(model_person.id_admin_status == 1).count()
+            contador = (
+                self.db.query(model_person)
+                .filter(model_person.id_admin_status == 1)
+                .count()
+            )
             response_data = {"usuarios_pendientes_autorizar": contador}
         except Exception as e:
             self.db.rollback()
