@@ -16,36 +16,47 @@ from app.models.study_type import StudyType as model_study_type
 from app.schemas.responses import ResponseNOK, ResponseOK
 from app.schemas.returned_object import ReturnMessage
 
-ALLOWED_EXTENSIONS = ['pdf', 'jpeg', 'jpg', 'png']
+ALLOWED_EXTENSIONS = ["pdf", "jpeg", "jpg", "png"]
 MAX_FILE_SIZE_MB = 10
 
 
 class StudiesController:
-
     log = MainLogger()
     module = logging.getLogger(__name__)
 
     def __init__(self, db: Session):
         self.db = db
 
-    async def upload_study(self, person_id: int, description: str, study_type_id: int, study: UploadFile = File(...)):
+    async def upload_study(
+        self,
+        person_id: int,
+        description: str,
+        study_type_id: int,
+        study: UploadFile = File(...),
+    ):
         # Validating if the person exists
         existing_person = (
             self.db.query(model_person).where(model_person.id == person_id).first()
         )
 
         if existing_person is None:
-            return ResponseNOK(message=f"Non existent person_id: {str(person_id)}", code=417)
+            return ResponseNOK(
+                message=f"Non existent person_id: {str(person_id)}", code=417
+            )
 
         # Validating the file type
-        file_extension = study.filename.split('.')[-1].lower()
-        if file_extension not in ALLOWED_EXTENSIONS:
-            return ResponseNOK(message="Invalid file type", code=400)
+        # TODO: esto es un binario, por lo que creo que el file_extension
+        #  del filename puede no ser el correcto, depende de cómo lo envía frontend,
+        #  o de cómo lo sube el usuario. Lo comento para no bloquear al frontend, pero
+        #  deberíamos reveerlo.
+        # file_extension = study.filename.split('.')[-1].lower()
+        # if file_extension not in ALLOWED_EXTENSIONS:
+        #     return ResponseNOK(message="Invalid file type", code=400)
 
         # Validating the MIMETYPE
         mime_type = filetype.guess(study.file.read())
         study.file.seek(0)
-        if mime_type is None or mime_type.mime.split('/')[-1] not in ALLOWED_EXTENSIONS:
+        if mime_type is None or mime_type.mime.split("/")[-1] not in ALLOWED_EXTENSIONS:
             return ResponseNOK(message="Invalid MIMETYPE", code=400)
 
         # Validating the file size
@@ -111,19 +122,25 @@ class StudiesController:
 
         try:
             result = []
-            studies_list = self.db.query(model_studies).where(model_studies.id_person == person_id).all()
+            studies_list = (
+                self.db.query(model_studies)
+                .where(model_studies.id_person == person_id)
+                .all()
+            )
 
             # No studies found for the specified person
             if not studies_list:
                 return result
 
             for u in studies_list:
-                result.append({
-                    "study_id": u.id,
-                    "study_name": u.study_name,
-                    "description": u.description,
-                    "upload_date": u.upload_date
-                })
+                result.append(
+                    {
+                        "study_id": u.id,
+                        "study_name": u.study_name,
+                        "description": u.description,
+                        "upload_date": u.upload_date,
+                    }
+                )
 
             return result
         except Exception as e:
@@ -137,14 +154,18 @@ class StudiesController:
             )
 
             if study is None:
-                return ResponseNOK(message=f"Study with ID {study_id} not found", code=404)
+                return ResponseNOK(
+                    message=f"Study with ID {study_id} not found", code=404
+                )
 
             decoded_file = base64.b64decode(study.file_path)
             file_stream = io.BytesIO(decoded_file)
 
             return StreamingResponse(
                 file_stream,
-                headers={"Content-Disposition": f"attachment; filename={study.study_name}"}
+                headers={
+                    "Content-Disposition": f"attachment; filename={study.study_name}"
+                },
             )
         except Exception as e:
             self.log.log_error_message(e, self.module)
@@ -153,19 +174,25 @@ class StudiesController:
     def get_studies_by_type(self, study_type_id: int):
         try:
             result = []
-            studies_list = self.db.query(model_studies).where(model_studies.id_study_type == study_type_id).all()
+            studies_list = (
+                self.db.query(model_studies)
+                .where(model_studies.id_study_type == study_type_id)
+                .all()
+            )
 
             # No studies found for the specified type
             if not studies_list:
                 return result
 
             for u in studies_list:
-                result.append({
-                    "study_id": u.id,
-                    "study_name": u.study_name,
-                    "description": u.description,
-                    "upload_date": u.upload_date
-                })
+                result.append(
+                    {
+                        "study_id": u.id,
+                        "study_name": u.study_name,
+                        "description": u.description,
+                        "upload_date": u.upload_date,
+                    }
+                )
 
             return result
         except Exception as e:
