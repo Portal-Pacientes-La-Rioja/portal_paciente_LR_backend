@@ -1179,8 +1179,11 @@ class LocalImpl:
             existing_person.identification_back_image_file_type = file2.content_type
             self.db.commit()
 
-            # validating email
-            await send_validation_mail(person_id, self.db)
+            if existing_person.identification_number == existing_person.identification_number_master:
+                # Este es el jefe de familia, hay que validar email
+                # validating email
+                await send_validation_mail(person_id, self.db)
+            # To the rest of family's members nothing to be done. So continue.
 
         except Exception as e:
             self.db.rollback()
