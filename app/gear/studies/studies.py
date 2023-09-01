@@ -47,13 +47,9 @@ class StudiesController:
             )
 
         # Validating the file type
-        # TODO: esto es un binario, por lo que creo que el file_extension
-        #  del filename puede no ser el correcto, depende de cómo lo envía frontend,
-        #  o de cómo lo sube el usuario. Lo comento para no bloquear al frontend, pero
-        #  deberíamos reveerlo.
-        # file_extension = study.filename.split('.')[-1].lower()
-        # if file_extension not in ALLOWED_EXTENSIONS:
-        #     return ResponseNOK(message="Invalid file type", code=400)
+        file_extension = study.filename.split('.')[-1].lower()
+        if file_extension not in ALLOWED_EXTENSIONS:
+            return ResponseNOK(message="Invalid file type", code=400)
 
         # Validating the MIMETYPE
         mime_type = filetype.guess(study.file.read())
