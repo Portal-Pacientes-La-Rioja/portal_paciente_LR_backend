@@ -30,6 +30,8 @@ class PersonUser(BaseModel):
     locality: Optional[str]
     email: Optional[str]
     id_person_status: Optional[int]
+    lat: Optional[float]
+    long: Optional[float]
     #####################
     # User
     #####################
