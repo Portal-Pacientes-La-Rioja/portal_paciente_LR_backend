@@ -1,6 +1,8 @@
 import base64
 import io
 import os
+from datetime import datetime
+
 import filetype
 
 from fastapi import File, UploadFile
@@ -78,7 +80,12 @@ class StudiesController:
         try:
             os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-            file_path = os.path.join(UPLOAD_DIR, study.filename)
+            timestamp = datetime.now().strftime('%Y%m%d%H%M')
+            file_extension = study.filename.split('.')[-1].lower()
+            file_name_without_extension = os.path.splitext(os.path.basename(study.filename))[0]
+            new_file_name = f"{file_name_without_extension}_{timestamp}.{file_extension}"
+
+            file_path = os.path.join(UPLOAD_DIR, new_file_name)
             file_content = open(file_path, "wb+")
             file_content.write(await study.read())
             file_content.close()
@@ -88,7 +95,7 @@ class StudiesController:
             new_study = model_studies(
                 id_person=person_id,
                 id_study_type=study_type_id,
-                study_name=study.filename,
+                study_name=new_file_name,
                 description=description,
                 file_path=b64_string_file,
             )
