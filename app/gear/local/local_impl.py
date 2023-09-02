@@ -1,5 +1,7 @@
 import base64
 import uuid
+import requests
+
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from typing import List, Dict
@@ -1312,8 +1314,8 @@ class LocalImpl:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="No family groups", code=417)
         return contador
-
     # Fin indicadores de chaco
+
 
     def indicador_cantidad_usuarios(self) -> int:
         try:
@@ -1324,6 +1326,7 @@ class LocalImpl:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="Error en la consulta", code=417)
         return response_data
+
 
     def indicador_usuarios_validados(self) -> int:
         try:
@@ -1339,6 +1342,7 @@ class LocalImpl:
             return ResponseNOK(message="Error en la consulta", code=417)
         return response_data
 
+
     def indicador_usuarios_rechazados(self) -> int:
         try:
             contador = (
@@ -1352,6 +1356,7 @@ class LocalImpl:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="Error en la consulta", code=417)
         return response_data
+
 
     def indicador_usuarios_pendientes(self) -> int:
         try:
