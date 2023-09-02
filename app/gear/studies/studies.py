@@ -2,6 +2,7 @@ import base64
 import io
 import os
 from datetime import datetime
+from pathlib import Path
 
 import filetype
 
@@ -77,8 +78,7 @@ class StudiesController:
             os.makedirs(UPLOAD_DIR, exist_ok=True)
 
             timestamp = datetime.now().strftime('%Y%m%d%H%M')
-            file_extension = study.filename.split('.')[-1].lower()
-            file_name_without_extension = os.path.splitext(os.path.basename(study.filename))[0]
+            file_name_without_extension = Path(study.filename).stem
             new_file_name = f"{file_name_without_extension}_{timestamp}.{file_extension}"
 
             file_path = os.path.join(UPLOAD_DIR, new_file_name)
