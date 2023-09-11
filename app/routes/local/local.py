@@ -10,7 +10,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from app.config.config import SECRET_KEY, ALGORITHM, TURNOS_MANAGER_URL
+from app.config.config import SECRET_KEY, ALGORITHM, TURNOS_MANAGER_URL, TURNOS_MANAGER_ENDPOINT
 from app.gear.geolocation.route_calculation import (
     ShortestRoute,
     ErrorDirecctionCalculation,
@@ -418,7 +418,7 @@ async def enviar_turno_mail(
 
 @router_local.get("/turnos/count", tags=["Indicadores"])
 async def get_turnos_count():
-    response = requests.get("/turnos/api/v1/metrics")  # TODO: Fix this line
+    response = requests.get(TURNOS_MANAGER_ENDPOINT + "metrics")
     count = json.loads(response.text)
     # Fix this, an endpoint should not return an endpoint. But now it need to
     #  be compatible with the rest of metrics
