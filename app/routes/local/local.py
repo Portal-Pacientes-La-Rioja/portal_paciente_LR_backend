@@ -418,7 +418,7 @@ async def enviar_turno_mail(
 
 @router_local.get("/turnos/count", tags=["Indicadores"])
 async def get_turnos_count():
-    response = requests.get(TURNOS_MANAGER_URL + "/metrics")
+    response = requests.get(TURNOS_MANAGER_URL + "metrics")
     count = json.loads(response.text)
     # Fix this, an endpoint should not return an endpoint. But now it need to
     #  be compatible with the rest of metrics
