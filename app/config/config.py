@@ -129,4 +129,7 @@ TURNOS_MANAGER_PORT = os.getenv("TURNOS_MANAGER_PORT", 9000)
 TURNOS_MANAGER_URL = (
     f"http://{TURNOS_MANAGER_HOST}:{TURNOS_MANAGER_PORT}/turnos/api/v1/turnos/"
 )
+TURNOS_MANAGER_ENDPOINT = (
+    f"http://{TURNOS_MANAGER_HOST}:{TURNOS_MANAGER_PORT}/turnos/api/v1/"
+)
 # endregion
