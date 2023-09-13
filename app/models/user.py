@@ -1,5 +1,7 @@
 import bcrypt
-from sqlalchemy import Column, Integer, String, MutableList
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.ext.mutable import MutableList
+from sqlalchemy import PickleType
 from sqlalchemy.orm import relationship
 from typing import List
 from app.config.database import Base
@@ -17,7 +19,7 @@ class User(Base):
     is_superadmin = Column(Integer, nullable=False, default=0)
     is_mail_validate = Column(Integer, nullable=True, default=0)
     is_admin_activate = Column(Integer, nullable=True, default=0)
-    old_institutions = Column(MutableList, nullable=True, default=[])
+    old_institutions = Column(MutableList.as_mutable(PickleType), nullable=True, default=[])
 
     institutions = relationship(
         "Institutions", secondary="institutions_user", back_populates="user"
