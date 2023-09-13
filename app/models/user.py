@@ -49,7 +49,8 @@ class User(Base):
         id_person: int,
         id_user_status: int,
         is_admin: int=0,
-        institutions: List=[]
+        institutions: List=[],
+        old_institutions: List=[],
     ):
         self.username = username
         self.password = self.encrypt_pwd(password)
@@ -58,3 +59,4 @@ class User(Base):
         self.is_admin = is_admin
         self.is_admin_activate = 1
         self.institutions: [inst.id for inst in institutions]
+        self.old_institutions = old_institutions
