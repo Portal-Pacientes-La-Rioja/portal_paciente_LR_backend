@@ -213,6 +213,14 @@ def assign_institutions_to_admins(
             .all()
         )
         user.institutions = institutions
+
+        set_institutions_all = set(institutions_ids)
+        set_institutions_saved = set(inst.id for inst in institutions)
+
+        old_institutions = set_institutions_all - set_institutions_saved
+
+        user.old_institutions = list(old_institutions)
+
         db.commit()
 
     except Exception as err:

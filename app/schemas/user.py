@@ -19,6 +19,8 @@ class UserAdmin(User):
     id: Optional[int]
     is_admin_activate: Optional[int]
     institutions:  Optional[list]
+    old_institutions: Optional[list]
+
     class Config:
         orm_mode = True
 
