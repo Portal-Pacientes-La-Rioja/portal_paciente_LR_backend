@@ -1,5 +1,7 @@
 import base64
 import uuid
+import requests
+
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from typing import List, Dict
@@ -1179,8 +1181,11 @@ class LocalImpl:
             existing_person.identification_back_image_file_type = file2.content_type
             self.db.commit()
 
-            # validating email
-            await send_validation_mail(person_id, self.db)
+            if existing_person.identification_number == existing_person.identification_number_master:
+                # Este es el jefe de familia, hay que validar email
+                # validating email
+                await send_validation_mail(person_id, self.db)
+            # To the rest of family's members nothing to be done. So continue.
 
         except Exception as e:
             self.db.rollback()
@@ -1309,8 +1314,8 @@ class LocalImpl:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="No family groups", code=417)
         return contador
-
     # Fin indicadores de chaco
+
 
     def indicador_cantidad_usuarios(self) -> int:
         try:
@@ -1321,6 +1326,7 @@ class LocalImpl:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="Error en la consulta", code=417)
         return response_data
+
 
     def indicador_usuarios_validados(self) -> int:
         try:
@@ -1336,6 +1342,7 @@ class LocalImpl:
             return ResponseNOK(message="Error en la consulta", code=417)
         return response_data
 
+
     def indicador_usuarios_rechazados(self) -> int:
         try:
             contador = (
@@ -1349,6 +1356,7 @@ class LocalImpl:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message="Error en la consulta", code=417)
         return response_data
+
 
     def indicador_usuarios_pendientes(self) -> int:
         try:
