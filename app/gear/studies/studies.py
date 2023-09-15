@@ -1,6 +1,9 @@
 import base64
 import io
 import os
+from datetime import datetime
+from pathlib import Path
+
 import filetype
 
 from fastapi import File, UploadFile
@@ -45,13 +48,9 @@ class StudiesController:
             )
 
         # Validating the file type
-        # TODO: esto es un binario, por lo que creo que el file_extension
-        #  del filename puede no ser el correcto, depende de cómo lo envía frontend,
-        #  o de cómo lo sube el usuario. Lo comento para no bloquear al frontend, pero
-        #  deberíamos reveerlo.
-        # file_extension = study.filename.split('.')[-1].lower()
-        # if file_extension not in ALLOWED_EXTENSIONS:
-        #     return ResponseNOK(message="Invalid file type", code=400)
+        file_extension = study.filename.split('.')[-1].lower()
+        if file_extension not in ALLOWED_EXTENSIONS:
+            return ResponseNOK(message="Invalid file type", code=400)
 
         # Validating the MIMETYPE
         mime_type = filetype.guess(study.file.read())
@@ -78,7 +77,11 @@ class StudiesController:
         try:
             os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-            file_path = os.path.join(UPLOAD_DIR, study.filename)
+            timestamp = datetime.now().strftime('%Y%m%d%H%M')
+            file_name_without_extension = Path(study.filename).stem
+            new_file_name = f"{file_name_without_extension}_{timestamp}.{file_extension}"
+
+            file_path = os.path.join(UPLOAD_DIR, new_file_name)
             file_content = open(file_path, "wb+")
             file_content.write(await study.read())
             file_content.close()
@@ -88,7 +91,7 @@ class StudiesController:
             new_study = model_studies(
                 id_person=person_id,
                 id_study_type=study_type_id,
-                study_name=study.filename,
+                study_name=new_file_name,
                 description=description,
                 file_path=b64_string_file,
             )
