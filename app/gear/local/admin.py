@@ -91,12 +91,12 @@ def list_of_persons_accepted(db: Session):
     return list_of_persons(True, db)
 
 
-def list_of_persons_to_accept(db: Session):
+def list_of_persons_to_accept(db: Session, username: Optional[str] = None):
     """
     Return list of persons, only name and surname of persons that
     need to be accepted.
     """
-    return list_of_persons(False, db)
+    return list_of_persons(False, db, username)
 
 
 def list_of_persons_in_general(db: Session, username: Optional[str] = None):

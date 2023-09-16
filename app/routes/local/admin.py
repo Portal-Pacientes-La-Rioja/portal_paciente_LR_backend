@@ -23,6 +23,7 @@ from app.schemas.returned_object import ReturnMessage
 from app.schemas.user import CreateUserAdmin, UserAdmin
 from fastapi import Depends
 from sqlalchemy.orm import Session
+
 # from fastapi_pagination import Page
 
 
@@ -74,8 +75,10 @@ async def persons_accepted(db: Session = Depends(get_db)):
     response_model=List[PersonsReduced],
     description="List of Persons to be id_admin_status in the system",
 )
-async def persons_accepted(db: Session = Depends(get_db)):
-    return list_of_persons_to_accept(db)
+async def persons_to_accept(
+    db: Session = Depends(get_db), current_user: str = Depends(get_current_user)
+):
+    return list_of_persons_to_accept(db, current_user)
 
 
 @router_admin.get(
