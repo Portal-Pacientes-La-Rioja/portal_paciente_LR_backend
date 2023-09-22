@@ -96,7 +96,10 @@ def list_of_persons_to_accept(db: Session, username: Optional[str] = None):
     Return list of persons, only name and surname of persons that
     need to be accepted.
     """
-    return list_of_persons(False, db, username)
+    all_people = list_of_persons(False, db, username)
+
+    # Only returns persons peding to accept
+    return [person for person in all_people if person.id_admin_status == 1]
 
 
 def list_of_persons_in_general(db: Session, username: Optional[str] = None):
