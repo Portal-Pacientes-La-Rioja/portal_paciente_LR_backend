@@ -99,6 +99,7 @@ def list_of_persons_to_accept(db: Session, username: Optional[str] = None):
     all_people = list_of_persons(False, db, username)
 
     # Only returns persons peding to accept
+    print(all_people)
     return [person for person in all_people if int(person.id_admin_status) == 1]
 
 
