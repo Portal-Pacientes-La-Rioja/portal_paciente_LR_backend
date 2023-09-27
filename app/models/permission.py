@@ -18,10 +18,13 @@ ADMIN_ROUTES = [
     "delete_message",
     "send_message",
     "Deny access to a Person",
-    "Accept a Person" "Get Admin by id",
+    "Accept a Person",
+    "Get Admin by id",
     "adminbyid",
     "List of persons",
     "get_admin_status",
+    "List of perstons to be accepted",
+    "persons_to_be_accepted",
 ]
 
 SUPERADMIN_ROUTES = [
@@ -35,7 +38,6 @@ SUPERADMIN_ROUTES = [
     "Deny access to a Person",
     "Accept a Person",
     "List of id_admin_status Person",
-    "List of id_admin_status Person",
     "List of persons",
     "Create an user admin",
     "create_admin",
@@ -44,6 +46,8 @@ SUPERADMIN_ROUTES = [
     "adminbyid",
     "onoffadmin",
     "change_password_admin",
+    "List of perstons to be accepted",
+    "persons_to_be_accepted",
 ]
 
 
