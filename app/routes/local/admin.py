@@ -71,7 +71,7 @@ async def persons_accepted(db: Session = Depends(get_db)):
 
 @router_admin.get(
     "/persons_to_be_accepted",
-    name="List of id_admin_status Person",
+    name="List of perstons to be accepted",
     response_model=List[PersonsReduced],
     description="List of Persons to be id_admin_status in the system",
 )
