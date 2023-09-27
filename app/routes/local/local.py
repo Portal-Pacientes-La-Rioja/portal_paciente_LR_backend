@@ -118,6 +118,17 @@ async def create_message(
     header: str, body: str, is_formatted: bool, db: Session = Depends(get_db)
 ):
     return LocalImpl(db).create_message(header, body, is_formatted)
+    
+@router_local.post(
+    "/sendwhatsappmessage", 
+    response_model=dict,
+    tags=["Message"],
+
+
+)
+async def send_whatsapp_message(number: str, body: str):
+    result = LocalImpl.send_whatsapp_message(number, body)
+    return result
 
 
 @router_local.put(
