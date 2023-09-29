@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 class PersonsReduced(BaseModel):
     id: int
-    username: str
+    username: Optional[str]
     name: str
     surname: str
     id_admin_status: int

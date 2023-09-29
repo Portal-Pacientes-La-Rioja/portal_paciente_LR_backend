@@ -13,6 +13,66 @@ from app.schemas.user import CreateUserAdmin
 from app.schemas.user import UserAdmin
 
 
+def list_persons_family_group_to_accept(db: Session, username: Optional[str] = None):
+    """
+    Retorna las personas de grupos familiares que tienen que ser aceptados por el admin
+    """
+    admin_user: model_user = (
+        db.query(model_user).where(model_user.username == username).first()
+    )
+
+    if not admin_user.is_admin:
+        return []
+
+    # A superadmin can query users from all institutions
+    if admin_user.is_superadmin:
+        cond_institution = True
+    else:
+        cond_institution = (
+            model_person.id_usual_institution.in_(
+                [inst.id for inst in admin_user.institutions]
+            )
+            if admin_user.institutions
+            else True
+        )
+
+    cond = model_person.id_admin_status == AdminStatusEnum.validation_pending.value
+
+    p_list = (
+        db.query(
+            model_person,
+            model_person.id,
+            model_person.surname,
+            model_person.name,
+            model_person.id_admin_status,
+            model_person.is_deleted,
+            model_person.id_person_status,
+            model_person.id_usual_institution,
+            model_person.inst_from_portal,
+        )
+        .where(cond)
+        .where(cond_institution)
+        .all()
+    )
+
+    persons_to_return = []
+
+    for p in p_list:
+        persons_to_return.append(
+            PersonsReduced(
+                id=p.id,
+                username=None,
+                name=p.name,
+                surname=p.surname,
+                id_admin_status=p.id_admin_status,
+                id_person_status=p.id_person_status,
+                id_usual_institution=p.id_usual_institution,
+                inst_from_portal=p.inst_from_portal,
+            )
+        )
+    return persons_to_return
+
+
 def list_of_persons(only_accepted: bool, db: Session, username: Optional[str] = None):
     """
     Return list of persons, only name surname and if is accepted or
@@ -45,8 +105,7 @@ def list_of_persons(only_accepted: bool, db: Session, username: Optional[str] = 
         else:
             cond = (
                 model_person.id_admin_status == AdminStatusEnum.validation_pending.value
-                or model_person.id_admin_status
-                == AdminStatusEnum.validation_rejected.value
+                or model_person.id_admin_status == AdminStatusEnum.validation_rejected.value
             )
 
     p_list = (
@@ -55,15 +114,14 @@ def list_of_persons(only_accepted: bool, db: Session, username: Optional[str] = 
             model_person.id,
             model_person.surname,
             model_person.name,
-            model_person.is_deleted,
             model_person.id_admin_status,
+            model_person.is_deleted,
             model_person.id_person_status,
             model_person.id_usual_institution,
             model_user.username,
             model_person.inst_from_portal,
         )
         .join(model_user, model_user.id_person == model_person.id)
-        .where(model_person.is_deleted == None)
         .where(cond)
         .where(cond_institution)
         .all()
@@ -98,7 +156,7 @@ def list_of_persons_to_accept(db: Session, username: Optional[str] = None):
     """
     all_people = list_of_persons(False, db, username)
 
-    # Only returns persons peding to accept
+    # Only returns persons peding to accep
     return [person for person in all_people if int(person.id_admin_status) == 1]
 
 
