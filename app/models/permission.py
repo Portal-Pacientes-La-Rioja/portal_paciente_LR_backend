@@ -25,6 +25,9 @@ ADMIN_ROUTES = [
     "get_admin_status",
     "List of perstons to be accepted",
     "persons_to_be_accepted",
+    "relatives_to_accept",
+    "List of relatives to be accepted",
+    "setadminstatustoperson",
 ]
 
 SUPERADMIN_ROUTES = [
@@ -48,6 +51,9 @@ SUPERADMIN_ROUTES = [
     "change_password_admin",
     "List of perstons to be accepted",
     "persons_to_be_accepted",
+    "relatives_to_accept",
+    "List of relatives to be accepted",
+    "setadminstatustoperson",
 ]
 
 
