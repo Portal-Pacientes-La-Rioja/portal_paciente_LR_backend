@@ -103,13 +103,10 @@ def list_of_persons(only_accepted: bool, db: Session, username: Optional[str] = 
         if only_accepted:
             cond = model_person.id_admin_status == AdminStatusEnum.validated.value
         else:
-            cond = model_person.id_admin_status == AdminStatusEnum.validation_pending.value
-            # cond = (
-
-            #    model_person.id_admin_status == AdminStatusEnum.validation_pending.value
-            #    or model_person.id_admin_status
-            #    == AdminStatusEnum.validation_rejected.value
-            #)
+            cond = (
+                model_person.id_admin_status == AdminStatusEnum.validation_pending.value
+                or model_person.id_admin_status == AdminStatusEnum.validation_rejected.value
+            )
 
     p_list = (
         db.query(
