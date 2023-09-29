@@ -14,6 +14,7 @@ from app.gear.local.admin import (
     not_accept_a_person,
     on_off_admin,
     remove_a_person,
+    list_persons_family_group_to_accept,
 )
 from app.main import get_db
 from app.routes.common import router_admin
@@ -79,6 +80,18 @@ async def persons_to_accept(
     db: Session = Depends(get_db), current_user: str = Depends(get_current_user)
 ):
     return list_of_persons_to_accept(db, current_user)
+
+
+@router_admin.get(
+    "/relatives_to_accept",
+    name="List of relatives to be accepted",
+    response_model=List[PersonsReduced],
+    description="List of relatives to be id_admin_status in the system",
+)
+async def relatives_to_accept(
+    db: Session = Depends(get_db), current_user: str = Depends(get_current_user)
+):
+    return list_persons_family_group_to_accept(db, current_user)
 
 
 @router_admin.get(
