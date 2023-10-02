@@ -27,8 +27,7 @@ ADMIN_ROUTES = [
     "persons_to_be_accepted",
     "relatives_to_accept",
     "List of relatives to be accepted",
-    "setadminstatustoperson",
-    "Set Admin status to Person",
+    "set_admin_status_to_person",
 ]
 
 SUPERADMIN_ROUTES = [
@@ -54,8 +53,7 @@ SUPERADMIN_ROUTES = [
     "persons_to_be_accepted",
     "relatives_to_accept",
     "List of relatives to be accepted",
-    "setadminstatustoperson",
-    "Set Admin status to Person",
+    "set_admin_status_to_person",
 ]
 
 
