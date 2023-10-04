@@ -1,9 +1,12 @@
 from typing import Dict
 
-from fastapi.encoders import jsonable_encoder
+from fastapi import Depends
+from sqlalchemy.orm import Session
 
 from app.gear.hsi.hsi_impl import HSI_Impl
 from app.gear.hsi.hsi_impl_2 import HSIImpl2
+from app.gear.local.local_impl import LocalImpl
+from app.main import get_db
 from app.routes.common import router_hsi
 
 
@@ -135,7 +138,6 @@ async def get_personal_histories(institution_id: int, patient_id: int) -> Dict:
 async def all_institutions() -> Dict:
     hsi_impl = HSI_Impl()
     return hsi_impl.get_all_institutions()
-
 
 # endregion
 

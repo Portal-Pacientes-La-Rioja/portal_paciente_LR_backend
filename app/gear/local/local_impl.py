@@ -1,6 +1,10 @@
 import base64
 import uuid
+import requests
+
+from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
+from typing import List, Dict
 from typing import Optional, Union
 
 from fastapi import Request, status, File, UploadFile
@@ -8,6 +12,7 @@ from fastapi.responses import Response
 from jose.exceptions import JWTError
 from sqlalchemy.exc import PendingRollbackError
 from sqlalchemy.orm import Session
+from unidecode import unidecode
 
 from app.config.config import (
     WHITE_LIST_PATH,
@@ -17,23 +22,29 @@ from app.config.config import (
     LOCAL_FILE_DOWNLOAD_DIRECTORY,
     VALIDATE_EMAIL_PATH,
 )
+from app.gear.geolocation import geolocator
+from app.gear.hsi.hsi_impl import HSI_Impl
 from app.gear.local.bearer_token import BearerToken
 from app.gear.log.main_logger import MainLogger, logging
 from app.gear.validation_mail.validation_mail import send_validation_mail
 from app.models.admin_status import AdminStatus as model_admin_status
 from app.models.category import Category as model_category
+from app.models.especialidades import Especialidades as model_especialidades
 from app.models.expiration_black_list import (
     ExpirationBlackList as model_expiration_black_list,
 )
 from app.models.genders import Gender as model_gender
+from app.models.institutions import Institutions as model_institution
 from app.models.message import Message as model_message
 from app.models.permission import Permission
 from app.models.person import Person as model_person
 from app.models.person_message import PersonMessage as model_person_message
 from app.models.person_status import PersonStatus as model_person_status
 from app.models.role import Role as model_role
+from app.models.services import Services as model_services
 from app.models.user import User as model_user
 from app.schemas.category_enum import CategoryEnum
+from app.schemas.institutions import Institution as schemas_institution
 from app.schemas.message import Message, ReadMessage
 from app.schemas.person import (
     Person as schema_person,
@@ -45,7 +56,6 @@ from app.schemas.user import User as schema_user
 
 
 class LocalImpl:
-
     log = MainLogger()
     module = logging.getLogger(__name__)
 
@@ -53,7 +63,6 @@ class LocalImpl:
         self.db = db
 
     async def filter_request_for_authorization(self, request: Request, call_next):
-
         if DEBUG_ENABLED:
             print(vars(request))
 
@@ -68,19 +77,19 @@ class LocalImpl:
                     "Access-Control-Allow-Methods": "POST, GET, OPTIONS, DELETE, PUT",
                     "Access-Control-Max-Age": "86400",
                     "Access-Control-Allow-Headers": "*",
-                    "Content-type": "*"
-                }
+                    "Content-type": "*",
+                },
             )
 
-        if AUTHORIZATION_ENABLED and (request.scope["path"] not in WHITE_LIST_PATH and
-                                      VALIDATE_EMAIL_PATH not in request.scope["path"]):
-
+        if AUTHORIZATION_ENABLED and (
+            request.scope["path"] not in WHITE_LIST_PATH
+            and VALIDATE_EMAIL_PATH not in request.scope["path"]
+        ):
             auth_token = request.headers.get("Authorization")
             bearer_token = BearerToken(auth_token)
 
             # Verificación de existencia del token y de que sea válido...
             if auth_token is None or self.is_token_expired(bearer_token):
-
                 if bearer_token.payload is not None:
                     self.log.log_error_message(
                         "Non valid token, expired or not provided for "
@@ -240,7 +249,9 @@ class LocalImpl:
             username = payload.get("sub")
 
             # check if the user is in DB
-            user = self.db.query(model_user).where(model_user.username == username).first()
+            user = (
+                self.db.query(model_user).where(model_user.username == username).first()
+            )
             if user is None:
                 return False
 
@@ -252,7 +263,6 @@ class LocalImpl:
 
     def create_message(self, header: str, body: str, is_formatted: bool):
         try:
-
             new_message = model_message()
 
             new_message.header = header
@@ -312,13 +322,37 @@ class LocalImpl:
         return ResponseOK(message="Message deleted successfully.", code=200)
 
     def send_message(
-        self, message_id: int, category_id: int, is_for_all_categories: bool
+        self,
+        message_id: int,
+        category_id: int,
+        is_for_all_categories: bool,
+        username: Optional[str] = None,
     ):
+        admin_user: model_user = (
+            self.db.query(model_user).where(model_user.username == username).first()
+        )
+
+        if not admin_user.is_admin:
+            return ResponseNOK(
+                message="Message relation not created. Unauthorized", code=417
+            )
+
+        # A superadmin can send a message to all institutions
+        if admin_user.is_superadmin:
+            cond_institution = True
+        else:
+            cond_institution = (
+                model_person.id_usual_institution.in_(
+                    [inst.id for inst in admin_user.institutions]
+                )
+                if admin_user.institutions
+                else True
+            )
         try:
             create_relation = False
             receipt_found = False
 
-            existing_persons = self.db.query(model_person).all()
+            existing_persons = self.db.query(model_person).where(cond_institution).all()
             for p in existing_persons:
                 if is_for_all_categories:
                     receipt_found = True
@@ -351,7 +385,6 @@ class LocalImpl:
                                     receipt_found = True
                                     create_relation = True
                 if create_relation:
-
                     new_person_message = model_person_message()
                     new_person_message.id_person = p.id
                     new_person_message.id_message = message_id
@@ -362,7 +395,6 @@ class LocalImpl:
                 create_relation = False
 
             if receipt_found:
-
                 message = (
                     self.db.query(model_message)
                     .where(model_message.id == message_id)
@@ -432,7 +464,6 @@ class LocalImpl:
 
     def set_message_read(self, person_id: int, message_id: int):
         try:
-
             person_message = (
                 self.db.query(model_person_message)
                 .where(model_person_message.id_person == person_id)
@@ -450,6 +481,237 @@ class LocalImpl:
             self.log.log_error_message(e, self.module)
             return ResponseNOK(message=f"Error: {str(e)}", code=417)
 
+    def create_institution(
+        self, institution: schemas_institution
+    ) -> Union[ResponseOK, ResponseNOK]:
+        buff_institution = (
+            self.db.query(model_institution)
+            .where(model_institution.name == institution.name)
+            .first()
+        )
+        if buff_institution is not None:
+            return ResponseNOK(
+                value="", message="Institution already exists.", code=417
+            )
+        try:
+            new_inst = model_institution(
+                name=institution.name,
+                codigo=institution.codigo,
+                domicilio=institution.domicilio,
+                tipologia=institution.tipologia,
+                categoria_tipologia=institution.categoria_tipologia,
+                dependencia=institution.dependencia,
+                departamento=institution.departamento,
+                localidad=institution.localidad,
+                ciudad=institution.ciudad,
+                telefono=institution.telefono,
+                email=institution.email,
+            )
+
+            services = (
+                self.db.query(model_services)
+                .filter(model_services.id.in_(institution.services))
+                .all()
+            )
+            new_inst.services = services
+
+            especialidades = (
+                self.db.query(model_especialidades)
+                .filter(model_especialidades.id.in_(institution.especialidades))
+                .all()
+            )
+            new_inst.especialidades = especialidades
+
+            domicilio = f"{institution.domicilio}, {institution.localidad}, {institution.departamento}, Argentina"
+            lat, long = geolocator.get_lat_long_from_address(domicilio)
+            new_inst.lat = lat
+            new_inst.long = long
+
+            self.db.add(new_inst)
+            self.db.commit()
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Institution not created.", code=417)
+        return ResponseOK(
+            message="Institution created successfully.",
+            code=201,
+            value=str(new_inst.id),
+        )
+
+    def get_institutions(self) -> Union[List[Dict], ResponseNOK]:
+        try:
+            institution_list = self.db.query(model_institution).all()
+            return institution_list
+        except Exception as e:
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message=f"Error: {str(e)}", code=417)
+
+    def get_institutions_by_person_id(
+        self, person_id: int
+    ) -> Union[List[Dict], ResponseNOK]:
+        try:
+            person = (
+                self.db.query(model_person).filter(model_person.id == person_id).first()
+            )
+            return {"id_institution": person.id_usual_institution}
+        except Exception as e:
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message=f"Error: {str(e)}", code=417)
+
+    def get_merge_institutions(self) -> Union[List[Dict], ResponseNOK]:
+        """
+        We need to have coordinated the institutions from HSI system and Portal. The
+        actual issue is that HSI is a live system and can change in the time adding
+        or removing institutions.
+
+        So, this method merge the two institutions lists. The data is saved in the portal
+        database, so to difference the id institutions from HSI will be saved multiplied
+        by 1000. In this way, Portal will know if an id is from HSI, and will get the data
+        from HSI or Portal. This transformation will only occur in the /createperson endpoint.
+
+        This method return a list of dictionaries with the form:
+
+        [
+            {
+              "id": "id",
+              "name": "name",
+              "portal": False,
+            },
+            {
+              "id": "id",
+              "name": "name",
+              "portal": True,
+            }
+            ...
+        ]
+        """
+
+        @dataclass
+        class MergedInstitutions:
+            id_inst: int
+            name: str
+            portal: bool = True
+
+        # Get institutions from HSI
+        hsi_impl = HSI_Impl()
+        hsi_institutions = hsi_impl.get_all_institutions()
+        try:
+            portal_institutions = [
+                MergedInstitutions(id_inst=id_inst, name=name)
+                for id_inst, name in self.db.query(
+                    model_institution.id, model_institution.name
+                ).all()
+            ]
+        except Exception as e:
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message=f"Error: {str(e)}", code=417)
+
+        # TODO: Esto es horrible, hay que cambiar:
+        to_add = []
+        for hsi_inst in hsi_institutions:
+            exists = False
+            for portal_inst in portal_institutions:
+                if (
+                    unidecode(hsi_inst["name"]).upper()
+                    == unidecode(portal_inst.name).upper()
+                ):
+                    portal_inst.id_inst = hsi_inst["id"]
+                    portal_inst.portal = False
+                    exists = True
+                    break
+            if not exists:
+                to_add.append(
+                    MergedInstitutions(
+                        id_inst=hsi_inst["id"], name=hsi_inst["name"], portal=False
+                    )
+                )
+
+        portal_institutions += to_add
+
+        return [asdict(inst) for inst in portal_institutions]
+
+    def get_institutions_by_id(self, institutions_id: int):
+        try:
+            value = (
+                self.db.query(model_institution)
+                .where(model_institution.id == institutions_id)
+                .first()
+            )
+        except Exception as e:
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Institution cannot be retrieved.", code=202)
+        return value
+
+    def on_off_institution(self, institution: schemas_institution):
+        try:
+            existing_institution = (
+                self.db.query(model_institution)
+                .where(model_institution.name == institution.name)
+                .first()
+            )
+            # swap to 1 or 0 according its value
+            existing_institution.activate = existing_institution.activate ^ 1
+            self.db.commit()
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Institution does not updated.", code=417)
+
+        return ResponseOK(message="Updated successfully.", code=201)
+
+    def update_institution(self, institution: schemas_institution):
+        existing_institution = (
+            self.db.query(model_institution)
+            .where(model_institution.id == institution.id)
+            .first()
+        )
+        if existing_institution is None:
+            return ResponseNOK(
+                value="", message="Institution does not exists.", code=417
+            )
+
+        try:
+            existing_institution.name = institution.name
+            existing_institution.codigo = institution.codigo
+            existing_institution.domicilio = institution.domicilio
+            existing_institution.tipologia = institution.tipologia
+            existing_institution.categoria_tipologia = institution.categoria_tipologia
+            existing_institution.dependencia = institution.dependencia
+            existing_institution.departamento = institution.departamento
+            existing_institution.localidad = institution.localidad
+            existing_institution.ciudad = institution.ciudad
+            existing_institution.telefono = institution.telefono
+            existing_institution.email = institution.email
+
+            # geolocalization
+            domicilio = f"{institution.domicilio}, {institution.localidad}, {institution.departamento}, Argentina"
+            lat, long = geolocator.get_lat_long_from_address(domicilio)
+            existing_institution.lat = lat
+            existing_institution.long = long
+
+            services = (
+                self.db.query(model_services)
+                .filter(model_services.id.in_(institution.services))
+                .all()
+            )
+            existing_institution.services = services
+
+            especialidades = (
+                self.db.query(model_especialidades)
+                .filter(model_especialidades.id.in_(institution.especialidades))
+                .all()
+            )
+            existing_institution.especialidades = especialidades
+
+            self.db.commit()
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Institution does not updated.", code=417)
+
+        return ResponseOK(message="Institution updated successfully.", code=201)
+
     def create_person(self, person: schema_create_person):
         buff_person = (
             self.db.query(model_person)
@@ -463,11 +725,27 @@ class LocalImpl:
 
             new_person.is_deleted = None
 
+            address = (
+                f"{new_person.address_street} {new_person.address_number}, "
+                f"{new_person.locality}, {new_person.department}, Argentina"
+            )
+            lat, long = geolocator.get_lat_long_from_address(address)
+            new_person.lat = lat
+            new_person.long = long
+
             self.db.add(new_person)
             self.db.commit()
 
+            person_add = (
+                self.db.query(model_person)
+                .where(
+                    model_person.identification_number == person.identification_number
+                )
+                .first()
+            )
+
             return ResponseOK(
-                value=str(new_person.id),
+                value=str(person_add.id),
                 message="Person created successfully.",
                 code=201,
             )
@@ -525,6 +803,15 @@ class LocalImpl:
 
             existing_person.is_deleted = None
 
+            address = (
+                f"{existing_person.address_street} {existing_person.address_number}, "
+                f"{existing_person.locality}, {existing_person.department}, Argentina"
+            )
+            lat, long = geolocator.get_lat_long_from_address(address)
+            existing_person.lat = lat
+            existing_person.long = long
+            existing_person.inst_from_portal = updated_person.inst_from_portal
+
             self.db.commit()
             return ResponseOK(
                 value=str(existing_person.id),
@@ -564,11 +851,7 @@ class LocalImpl:
         person_identification_number: Optional[str],
         is_by_id: bool,
     ):
-
-        existing_person = None
-
         try:
-
             if is_by_id:
                 existing_person = (
                     self.db.query(model_person)
@@ -606,7 +889,6 @@ class LocalImpl:
     def get_family_group_by_identification_number_master(
         self, identification_number_master: str
     ):
-
         s_family_group = []
 
         family_group = (
@@ -675,6 +957,11 @@ class LocalImpl:
         s_person.email = m_person.email
         s_person.is_deleted = m_person.is_deleted
 
+        s_person.lat = m_person.lat
+        s_person.long = m_person.long
+
+        s_person.inst_from_portal = m_person.inst_from_portal
+
         return s_person
 
     def set_admin_status_to_person(self, person_id: int, admin_status_id: int):
@@ -712,6 +999,13 @@ class LocalImpl:
         if user is not None:
             return ResponseNOK(message="Username already exists.", code=417)
         try:
+            address = (
+                f"{person_user.address_street} {person_user.address_number}, "
+                f"{person_user.locality}, {person_user.department}, Argentina"
+            )
+            lat, long = geolocator.get_lat_long_from_address(address)
+            person_user.lat = lat
+            person_user.long = long
             new_person = model_person(
                 None,
                 person_user.surname,
@@ -739,6 +1033,9 @@ class LocalImpl:
                 person_user.locality,
                 person_user.email,
                 person_user.id_person_status,
+                person_user.inst_from_portal,
+                lat=person_user.lat,
+                long=person_user.long,
             )
 
             new_person.is_deleted = None
@@ -884,8 +1181,11 @@ class LocalImpl:
             existing_person.identification_back_image_file_type = file2.content_type
             self.db.commit()
 
-            # validating email
-            await send_validation_mail(person_id, self.db)
+            if existing_person.identification_number == existing_person.identification_number_master:
+                # Este es el jefe de familia, hay que validar email
+                # validating email
+                await send_validation_mail(person_id, self.db)
+            # To the rest of family's members nothing to be done. So continue.
 
         except Exception as e:
             self.db.rollback()
@@ -895,7 +1195,6 @@ class LocalImpl:
 
     def download_identification_image(self, person_id: str, is_front: bool):
         try:
-
             file_name = None
             existing_person = (
                 self.db.query(model_person).where(model_person.id == person_id).first()
@@ -959,3 +1258,116 @@ class LocalImpl:
             message="File downloaded successfully.",
             code=201,
         )
+
+    async def get_especialidades(
+        self, codigo: Optional[int] = None
+    ) -> Union[List[model_especialidades], model_especialidades]:
+        if codigo is None:
+            return self.db.query(model_especialidades).all()
+        return (
+            self.db.query(model_especialidades)
+            .where(model_especialidades.codigo == codigo)
+            .first()
+        )
+
+    async def get_services(
+        self, id_service: Optional[int] = None
+    ) -> Union[List[model_services], model_services]:
+        if id_service is None:
+            return self.db.query(model_services).all()
+        return (
+            self.db.query(model_services).where(model_services.id == id_service).first()
+        )
+
+    # Indicadores de chaco
+    def indicador_usuarios_activos(self) -> int:
+        try:
+            contador = (
+                self.db.query(model_user.id_user_status.like(1))
+                .where(model_user.is_admin == 0)
+                .count()
+            )
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="There's no active users.", code=417)
+        return contador
+
+    def indicador_usuarios_master(self) -> int:
+        try:
+            contador = self.db.query(model_user).where(model_user.is_admin == 0).count()
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="There's no active masters.", code=417)
+        return contador
+
+    def indicador_grupo_familiar(self) -> int:
+        try:
+            contador = (
+                self.db.query(model_person)
+                .where(model_person.identification_number_master != None)
+                .count()
+            )
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="No family groups", code=417)
+        return contador
+    # Fin indicadores de chaco
+
+
+    def indicador_cantidad_usuarios(self) -> int:
+        try:
+            contador = self.db.query(model_user).count()
+            response_data = {"cantidad_usuarios": contador}
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Error en la consulta", code=417)
+        return response_data
+
+
+    def indicador_usuarios_validados(self) -> int:
+        try:
+            contador = (
+                self.db.query(model_person)
+                .filter(model_person.id_admin_status == 2)
+                .count()
+            )
+            response_data = {"usuarios_validados": contador}
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Error en la consulta", code=417)
+        return response_data
+
+
+    def indicador_usuarios_rechazados(self) -> int:
+        try:
+            contador = (
+                self.db.query(model_person)
+                .filter(model_person.id_admin_status == 3)
+                .count()
+            )
+            response_data = {"usuarios_rechazados": contador}
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Error en la consulta", code=417)
+        return response_data
+
+
+    def indicador_usuarios_pendientes(self) -> int:
+        try:
+            contador = (
+                self.db.query(model_person)
+                .filter(model_person.id_admin_status == 1)
+                .count()
+            )
+            response_data = {"usuarios_pendientes_autorizar": contador}
+        except Exception as e:
+            self.db.rollback()
+            self.log.log_error_message(e, self.module)
+            return ResponseNOK(message="Error en la consulta", code=417)
+        return response_data

@@ -144,3 +144,6 @@ cython_debug/
 *.db
 
 .env_*
+
+# visualcode config
+.vscode/
