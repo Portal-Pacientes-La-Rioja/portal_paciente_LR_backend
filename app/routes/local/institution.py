@@ -43,7 +43,7 @@ async def get_institution_by_id(institution_id: int, db: Session = Depends(get_d
 
 @router_institutions.get(
     "/getinstitutions",
-    # response_model=List[schemas_institution_with_id],  TODO: return this again
+    response_model=List[schemas_institution_with_id],
     responses={417: {"model": ResponseNOK}},
     tags=["Institutions"],
 )
