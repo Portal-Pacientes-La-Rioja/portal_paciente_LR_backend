@@ -65,5 +65,5 @@ async def create_institution(institution: schemas_institution, db: Session = Dep
 async def all_institutions(db: Session = Depends(get_db)):
     institutions = LocalImpl(db).get_merge_institutions()
 
-    return [{"id": institution["id_inst"], "name": institution["name"], "portal": institution["portal"]}
+    return [{"id": institution.id, "name": institution.name}
             for institution in institutions]
