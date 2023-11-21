@@ -37,6 +37,21 @@ class Person(BaseModel):
     identification_back_image_file_type: Optional[str]
     id_person_status: Optional[int]
     family_group: Optional[list]
+    ##################
+    #get_institutions
+    ##################
+    
+    tipology: Optional[str]   
+    tipology_category: Optional[str]
+    dependecy: Optional[str]
+    location: Optional[str]
+    address: Optional[str]
+    services: Optional[str]
+    specialties: Optional[str]
+    activate: Optional[int]
+    lat: Optional[float]
+    long: Optional[float]
+    inst_from_portal: Optional[bool]
 
     @validator("birthdate", pre=True)
     def parse_birthdate(cls, value):
@@ -77,6 +92,7 @@ class CreatePerson(BaseModel):
     locality: Optional[str]
     email: Optional[str]
     id_person_status: Optional[int]
+    inst_from_portal: Optional[bool]
 
     @validator("birthdate", pre=True)
     def parse_birthdate(cls, value):
@@ -110,6 +126,9 @@ class CreatePersonResponse(BaseModel):
     locality: Optional[str]
     email: Optional[str]
     id_person_status: Optional[int]
+    lat: Optional[float]
+    long: Optional[float]
+    inst_from_portal: Optional[bool]
 
     class Config:
         orm_mode = True
@@ -142,6 +161,9 @@ class Person2(BaseModel):
     locality: Optional[str]
     email: Optional[str]
     id_person_status: Optional[int]
+    lat: Optional[float]
+    long: Optional[float]
+    inst_from_portal: Optional[bool]
 
 
 class PersonFamily(BaseModel):
@@ -171,7 +193,10 @@ class PersonFamily(BaseModel):
     locality: Optional[str]
     email: Optional[str]
     id_person_status: Optional[int]
+    lat: Optional[float]
+    long: Optional[float]
     family_group: List[Person2]
+    inst_from_portal: Optional[bool]
 
 
 class PersonLogged(BaseModel):
@@ -179,3 +204,17 @@ class PersonLogged(BaseModel):
     access_token: str
     token_type: str
     data: PersonFamily
+
+
+class Institution(BaseModel):
+    id: Optional[int]
+    name: Optional[str]
+    tipology: Optional[str]   
+    tipology_category: Optional[str]
+    dependecy: Optional[str]
+    department: Optional[str]
+    location: Optional[str]
+    address: Optional[str]
+    services: Optional[str]
+    specialties: Optional[str]
+    activate: Optional[int]

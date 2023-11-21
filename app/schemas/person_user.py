@@ -30,6 +30,8 @@ class PersonUser(BaseModel):
     locality: Optional[str]
     email: Optional[str]
     id_person_status: Optional[int]
+    lat: Optional[float]
+    long: Optional[float]
     #####################
     # User
     #####################
@@ -37,6 +39,8 @@ class PersonUser(BaseModel):
     password: Optional[str]
     id_person: Optional[int]
     id_user_status: Optional[int]
+
+    inst_from_portal: Optional[bool] = True
 
     @validator("birthdate", pre=True)
     def parse_birthdate(cls, value):
